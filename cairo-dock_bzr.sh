@@ -19,7 +19,7 @@
 
 
 #Changelog
-# 07/09/09 : 	fix de libxklavier, revno + possibilité de bzr branch ou bzr checkout
+# 07/09/09 : 	fix de libxklavier, fix de revno, réduction des passphrases, possibilité de choisir bzr branch ou bzr checkout
 # 06/09/09 : 	Modification du script pour gérér BZR
 # 16/05/09 : 	Suppression de stacks
 # 15/05/09 : 	Suppression des themes, ajout de dnd2share et modification de la detection de la distrib (smo)
@@ -277,12 +277,6 @@ uninstall() {
 #######################################################################
 
 update(){
-	if [ $BZR_DL_MODE -eq 1 ]; then
-		BZR_UP="pull"
-	else
-		BZR_UP="update -q"
-	fi
-
 	echo -e "$BLEU""Recherche des mises à jour pour cairo-dock"
 	if test -e "$BZR_REV_FILE_CORE"; then
 		ACTUAL_CORE_VERSION=`cat "$BZR_REV_FILE_CORE"`
@@ -290,9 +284,19 @@ update(){
 		echo 0 > "$BZR_REV_FILE_CORE"
 		ACTUAL_CORE_VERSION=0
 	fi
-	bzr $BZR_UP $CAIRO_DOCK_CORE_LP_BRANCH
-	NEW_CORE_VERSION=`bzr revno -q $CAIRO_DOCK_CORE_LP_BRANCH`
-	echo $NEW_CORE_VERSION > "$BZR_REV_FILE_CORE"
+
+	if [ $BZR_DL_MODE -eq 1 ]; then
+		BZR_UP="pull"
+		bzr $BZR_UP $CAIRO_DOCK_CORE_LP_BRANCH
+		NEW_CORE_VERSION=`bzr revno -q $CAIRO_DOCK_CORE_LP_BRANCH`
+	else
+		BZR_UP="update -q"
+		NEW_CORE_VERSION=`bzr revno -q $CAIRO_DOCK_CORE_LP_BRANCH`
+		if [ $ACTUAL_CORE_VERSION -ne $NEW_CORE_VERSION ]; then
+			bzr $BZR_UP $CAIRO_DOCK_CORE_LP_BRANCH
+		fi
+	fi
+
 	echo -e "\nCairo-Dock-Core : rev $NEW_CORE_VERSION \n"
 	echo -e "\nCairo-Dock-Core : rev $NEW_CORE_VERSION \n" >> $LOG_CAIRO_DOCK
 	
@@ -308,6 +312,7 @@ update(){
 		echo -e "$NORMAL"""
 	fi
 
+
 	echo -e "$BLEU""Recherche des mises à jour pour les plug-ins"
 	if test -e "$BZR_REV_FILE_PLUG_INS"; then
 		ACTUAL_PLUG_INS_VERSION=`cat "$BZR_REV_FILE_PLUG_INS"`
@@ -315,8 +320,17 @@ update(){
 		echo 0 > "$BZR_REV_FILE_PLUG_INS"
 		ACTUAL_PLUG_INS_VERSION=0
 	fi
-	bzr $BZR_UP $CAIRO_DOCK_PLUG_INS_LP_BRANCH
-	NEW_PLUG_INS_VERSION=`bzr revno -q $CAIRO_DOCK_PLUG_INS_LP_BRANCH`
+
+	if [ $BZR_DL_MODE -eq 1 ]; then
+		bzr $BZR_UP $CAIRO_DOCK_PLUG_INS_LP_BRANCH
+		NEW_PLUG_INS_VERSION=`bzr revno -q $CAIRO_DOCK_PLUG_INS_LP_BRANCH`
+	else
+		NEW_PLUG_INS_VERSION=`bzr revno -q $CAIRO_DOCK_PLUG_INS_LP_BRANCH`
+		if [ $ACTUAL_CORE_VERSION -ne $NEW_CORE_VERSION ]; then
+			bzr $BZR_UP $CAIRO_DOCK_PLUG_INS_LP_BRANCH
+		fi
+	fi
+
 	echo $NEW_PLUG_INS_VERSION > "$BZR_REV_FILE_PLUG_INS"
 	echo -e "\nCairo-Dock-Plug-Ins : rev $NEW_PLUG_INS_VERSION \n"
 	echo -e "\nCairo-Dock-Plug-Ins : rev $NEW_PLUG_INS_VERSION \n" >> $LOG_CAIRO_DOCK
