@@ -19,7 +19,8 @@
 
 
 #Changelog
-# 07/09/09 : 	fix de libxklavier, fix de revno, réduction des passphrases, possibilité de choisir bzr branch ou bzr checkout
+# 08/09/09 : 	fix de libxklavier, fix de revno, réduction des passphrases
+#		possibilité de choisir bzr branch ou bzr checkout et d'installer les depôts weekly
 # 06/09/09 : 	Modification du script pour gérér BZR
 # 16/05/09 : 	Suppression de stacks
 # 15/05/09 : 	Suppression des themes, ajout de dnd2share et modification de la detection de la distrib (smo)
@@ -198,6 +199,11 @@ install(){
 		if [ $? -ne 0 ]; then
 			echo -e "$ROUGE""Impossible de se connecter au serveur de Launchpad, veuillez vérifier votre connexion internet ou retenter plus tard"
 			exit
+		else
+			NEW_CORE_VERSION=`bzr revno -q $CAIRO_DOCK_CORE_LP_BRANCH`
+			echo $NEW_CORE_VERSION > $BZR_REV_FILE_CORE
+			echo -e "\nCairo-Dock-Core : rev $NEW_CORE_VERSION \n"
+			echo -e "\nCairo-Dock-Core : rev $NEW_CORE_VERSION \n" >> $LOG_CAIRO_DOCK
 		fi
 	fi
 
@@ -209,6 +215,11 @@ install(){
 		if [ $? -ne 0 ]; then
 			echo -e "$ROUGE""Impossible de se connecter au serveur de Launchpad, veuillez vérifier votre connexion internet ou retenter plus tard"
 			exit
+		else
+			NEW_PLUG_INS_VERSION=`bzr revno -q $CAIRO_DOCK_PLUG_INS_LP_BRANCH`
+			echo $NEW_PLUG_INS_VERSION > $BZR_REV_FILE_PLUG_INS
+			echo -e "\nCairo-Dock-Core : rev $NEW_PLUG_INS_VERSION \n"
+			echo -e "\nCairo-Dock-Core : rev $NEW_PLUG_INS_VERSION \n" >> $LOG_CAIRO_DOCK
 		fi
 	fi
 
@@ -247,7 +258,7 @@ reinstall(){
 
 
 uninstall() {
-	echo "Désinstallation de Cairo-Dock et des plug-ins"	
+	echo "Désinstallation de Cairo-Dock et des plug-ins"
 	
 	cd $DIR/$CAIRO_DOCK_CORE_LP_BRANCH
 	sudo make uninstall > $LOG_CAIRO_DOCK 2>&1
@@ -265,8 +276,7 @@ uninstall() {
 	echo "Cependant, votre dossier de configuration est toujours présent."
 	echo "Celui-ci se trouve dans votre /home/.config et se nomme cairo-dock (attention c'est un dossier caché)."
 	echo "Vous pouvez le supprimer une fois la désinstallation effectuée"
-	zenity --info --title=Cairo-Dock --text="Cairo-Dock a été désinstallé, veuillez lire le message dans le terminal"	
-	exit
+	zenity --info --title=Cairo-Dock --text="Cairo-Dock a été désinstallé, veuillez lire le message dans le terminal"
 
 }
 
@@ -297,6 +307,7 @@ update(){
 		fi
 	fi
 
+	echo $NEW_CORE_VERSION > $BZR_REV_FILE_CORE
 	echo -e "\nCairo-Dock-Core : rev $NEW_CORE_VERSION \n"
 	echo -e "\nCairo-Dock-Core : rev $NEW_CORE_VERSION \n" >> $LOG_CAIRO_DOCK
 	
@@ -349,8 +360,7 @@ update(){
  	if [ $UPDATE -eq 1 ]; then
 	    check $LOG_CAIRO_DOCK "CD"
 	else
-		echo -e "$BLEU"
-		echo "Pas de mise à jour disponible"
+		echo -e "$BLEU""Pas de mise à jour disponible"
 		echo -e "$NORMAL"
 		add_icon_to_gnome_menu
 		zenity --info --title=Cairo-Dock --text="Cliquez sur Ok pour fermer le terminal."
@@ -557,6 +567,37 @@ check_dependancies() {
 }
 
 
+ppa_weekly() {
+	if [ $DISTRIB = 'hardy' ]; then #hardy non supporté
+		echo -e "$ROUGE""Désolé mais ce dépôt n'offre pas de support pour Hardy\n\tCe n'est pas de ma faute si l'utilisation de debhelper est différente en fonction de la version de ce dernier :)"
+		echo -e "$NORMAL"""
+		exit
+	fi
+
+	echo -e "$VERT""Ajout du dépôt ppa weekly"
+	echo "Ajout du dépôt ppa weekly" >> $LOG_CAIRO_DOCK
+	echo -e "$NORMAL"""
+
+	if [ -d $DIR/$CAIRO_DOCK_CORE_LP_BRANCH ]; then
+		echo -e "$BLEU""Désinstallation de la version BZR"
+		echo -e "$NORMAL"""
+		uninstall
+	fi
+
+	echo -e "\nAjout du dépôt\n" >> $LOG_CAIRO_DOCK
+	echo "deb http://ppa.launchpad.net/cairo-dock-team/weekly/ubuntu $(lsb_release -sc) main ## Cairo-Dock-PPA-Weekly" | sudo tee -a /etc/apt/sources.list 
+	echo -e "\nAjout de la clé\n" >> $LOG_CAIRO_DOCK
+	sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E80D6BF5 >> $LOG_CAIRO_DOCK
+	echo -e "\nMise à jour de la apt list\n" >> $LOG_CAIRO_DOCK
+	sudo apt-get update  >> $LOG_CAIRO_DOCK
+	echo -e "\nInstallation\n" >> $LOG_CAIRO_DOCK
+	echo -e "$BLEU""Installation des paquets Cairo-Dock, version instable"
+	echo -e "$NORMAL"""
+	sudo apt-get install cairo-dock  >> $LOG_CAIRO_DOCK
+	zenity --info --title=Cairo-Dock --text="Cliquez sur Ok pour fermer le terminal."
+	exit
+}
+
 
 about() {
 	echo "Auteur : Mav"
@@ -591,9 +632,10 @@ echo -e "Veuillez choisir l'option d'installation : \n"
 
 echo -e "\t1 --> Mettre à jour la version BZR installée (Update)"
 echo -e "\t2 --> Installer la version BZR pour la première fois (Install)"
-echo -e "\t3 --> Reinstaller la version BZR actuelle (Renstall)"
+echo -e "\t3 --> Reinstaller la version BZR actuelle (Reinstall)"
 echo -e "\t4 --> Désinstaller la version BZR (Uninstall)"
-echo -e "\t5 --> A propos (About)"
+echo -e "\t5 --> Installer le ppa weekly au lieu de BZR (Install weekly ppa instead of BZR)"
+echo -e "\t6 --> A propos (About)"
 
 echo -e "\nVotre choix : "
 read answer_menu
@@ -623,9 +665,15 @@ case $answer_menu in
 	
 	"4")
 		uninstall
+		exit
 	;;
 
 	"5")
+		detect_distrib
+		ppa_weekly
+	;;
+
+	"6")
 		about
 	;;
 	
