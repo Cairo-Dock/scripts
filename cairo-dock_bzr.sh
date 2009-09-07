@@ -19,6 +19,7 @@
 
 
 #Changelog
+# 07/09/09 : 	fix de libxklavier, revno + possibilité de bzr branch ou bzr checkout
 # 06/09/09 : 	Modification du script pour gérér BZR
 # 16/05/09 : 	Suppression de stacks
 # 15/05/09 : 	Suppression des themes, ajout de dnd2share et modification de la detection de la distrib (smo)
@@ -37,7 +38,8 @@
 # 16/02/08 : 	Ajout des paquets libxxf86vm-dev et libx11-dev danss les dépendances
 # 12/02/08 : 	Ajout de la fonction de desinstallation de Glitz
 #				Modification de la fonction de vérification des erreurs lors de l'install
-		
+
+# TODO : passphrases
 
 DEBUG=0 # Attention, ne pas oublier de modifier !!!
 DIR=$(pwd)
@@ -50,16 +52,19 @@ HOST="http://svn.cairo-dock.org"
 CAIRO_DOCK_CORE_LP_BRANCH="cairo-dock-core"
 CAIRO_DOCK_PLUG_INS_LP_BRANCH="cairo-dock-plug-ins"
 
-
+#unset SSH_AUTH_SOCK # Evite de devoir retaper le passphrase
+# ssh-add
 
 #PLUGINS="alsaMixer Animated-icons Cairo-Penguin Clipper clock compiz-icon Dbus desklet-rendering dialog-rendering dnd2share dock-rendering drop-indicator dustbin GMenu icon-effect illusion keyboard-indicator logout mail motion-blur musicPlayer netspeed Network-Monitor powermanager quick-browser rhythmbox Scooby-Do shortcuts showDesklets showDesktop show-mouse slider stack System-Monitor switcher systray terminal tomboy Toons weather weblets wifi Xgamma xmms"
 PLUGINS_GNOME="gnome-integration"
 PLUGINS_GNOME_OLD="gnome-integration-old"
 PLUGINS_XFCE="xfce-integration"
 
-NEEDED="bzr libtool build-essential automake1.9 autoconf m4 autotools-dev pkg-config zenity intltool gettext libcairo2-dev libgtk2.0-dev librsvg2-dev libdbus-glib-1-dev libgnomeui-dev libvte-dev libxxf86vm-dev libx11-dev libalsa-ocaml-dev libasound2-dev libxtst-dev libgnome-menu-dev libgtkglext1-dev freeglut3-dev glutg3-dev libetpan-dev libxklavier12-dev libwebkit-dev libexif-dev"
+NEEDED="bzr libtool build-essential automake1.9 autoconf m4 autotools-dev pkg-config zenity intltool gettext libcairo2-dev libgtk2.0-dev librsvg2-dev libdbus-glib-1-dev libgnomeui-dev libvte-dev libxxf86vm-dev libx11-dev libalsa-ocaml-dev libasound2-dev libxtst-dev libgnome-menu-dev libgtkglext1-dev freeglut3-dev glutg3-dev libetpan-dev libwebkit-dev libexif-dev"
 NEEDED_XFCE="libthunar-vfs-1-dev"
 NEEDED_GNOME="libgnomevfs2-dev"
+NEEDED_KARMIC="libxklavier-dev"
+NEEDED_B_KARMIC="libxklavier12-dev"
 
 UPDATE=0
 UPDATE_PLUG_INS=0
@@ -70,6 +75,14 @@ FULL_COMPILE=0
 DISTRIB=""
 INSTALL_CAIRO_DOCK_OK=1
 
+if test -e "$DIR/.bzr_dl"; then
+	BZR_DL_MODE=`cat $DIR/.bzr_dl`
+else
+	BZR_DL_MODE=0
+fi
+
+BZR_REV_FILE_CORE="$DIR/.bzr_core"
+BZR_REV_FILE_PLUG_INS="$DIR/.bzr_plug_ins"
 
 NORMAL="\\033[0;39m"
 BLEU="\\033[1;34m"
@@ -153,7 +166,7 @@ install_plugins() {
 		return 1
 	fi
 
-	sudo make install			
+	sudo make install
 	cd ..
 }
 
@@ -162,13 +175,26 @@ install_plugins() {
 install(){
 
 	echo -e "$BLEU""C'est la première fois que vous installez la version BZR de Cairo-Dock"
-	echo "Téléchargement des données. Cette operation peut prendre quelques minutes"
+	echo -e "\nGrâce à l'outil bzr, vous pouvez désormais télécharger les sources de plusieurs façons, notamment télécharger tout le contenu de la branche (si vous souhaitez ultérieurement procéder à des modifications et les publier sur des branches différents) ou uniquement la dernière révision (si vous voulez simplement tester les dernières révisions)\n""$VERT"
+	echo -e "\t1 --> Télécharger la branche complète (~150Mo - pour les développeurs)\n\t\tDownload the complete branch (~150Mo - for dev.)"
+	echo -e "\t2 --> Télécharger la dernière version (~25Mo - pour tous utilisateurs)\n\t\tDownload only the last rev. (~25Mo - for all users)"
+	read BZR_DL_READ 
+	if [ $BZR_DL_READ -eq 1 ]; then
+		BZR_DL="branch"
+		BZR_DL_MODE=1
+	else
+		BZR_DL="checkout --lightweight -q"
+		BZR_DL_MODE=0
+	fi
+	echo $BZR_DL_MODE > $DIR/.bzr_dl
+	
+	echo -e "$BLEU""Téléchargement des données. Cette opération peut prendre quelques minutes"
 	echo -e "$NORMAL"
 	sleep 2
 
 	if [ ! -d $DIR/$CAIRO_DOCK_CORE_LP_BRANCH ]; then
 		echo -e "$BLEU""Téléchargement de cairo-dock"
-		bzr checkout --lightweight -q lp:$CAIRO_DOCK_CORE_LP_BRANCH 
+		bzr $BZR_DL lp:$CAIRO_DOCK_CORE_LP_BRANCH 
 		if [ $? -ne 0 ]; then
 			echo -e "$ROUGE""Impossible de se connecter au serveur de Launchpad, veuillez vérifier votre connexion internet ou retenter plus tard"
 			exit
@@ -179,7 +205,7 @@ install(){
 
 	if [ ! -d $DIR/$CAIRO_DOCK_PLUG_INS_LP_BRANCH ]; then
 		echo -e "$BLEU""Téléchargement des plugins"
-		bzr checkout --lightweight -q lp:$CAIRO_DOCK_PLUG_INS_LP_BRANCH 
+		bzr $BZR_DL lp:$CAIRO_DOCK_PLUG_INS_LP_BRANCH 
 		if [ $? -ne 0 ]; then
 			echo -e "$ROUGE""Impossible de se connecter au serveur de Launchpad, veuillez vérifier votre connexion internet ou retenter plus tard"
 			exit
@@ -197,7 +223,7 @@ install(){
 
 	install_cairo_dock_plugins
 
-	check $LOG_CAIRO_DOCK "CD"	
+	check $LOG_CAIRO_DOCK "CD"
 	
 }
 
@@ -251,10 +277,24 @@ uninstall() {
 #######################################################################
 
 update(){
+	if [ $BZR_DL_MODE -eq 1 ]; then
+		BZR_UP="pull"
+	else
+		BZR_UP="update -q"
+	fi
+
 	echo -e "$BLEU""Recherche des mises à jour pour cairo-dock"
-	ACTUAL_CORE_VERSION=`bzr revno -q $CAIRO_DOCK_CORE_LP_BRANCH`
-	bzr update -q $CAIRO_DOCK_CORE_LP_BRANCH
+	if test -e "$BZR_REV_FILE_CORE"; then
+		ACTUAL_CORE_VERSION=`cat "$BZR_REV_FILE_CORE"`
+	else
+		echo 0 > "$BZR_REV_FILE_CORE"
+		ACTUAL_CORE_VERSION=0
+	fi
+	bzr $BZR_UP $CAIRO_DOCK_CORE_LP_BRANCH
 	NEW_CORE_VERSION=`bzr revno -q $CAIRO_DOCK_CORE_LP_BRANCH`
+	echo $NEW_CORE_VERSION > "$BZR_REV_FILE_CORE"
+	echo -e "\nCairo-Dock-Core : rev $NEW_CORE_VERSION \n"
+	echo -e "\nCairo-Dock-Core : rev $NEW_CORE_VERSION \n" >> $LOG_CAIRO_DOCK
 	
 	if [ $ACTUAL_CORE_VERSION -ne $NEW_CORE_VERSION ]; then
 		echo -e "$VERT""Une mise à jour de cairo-dock a été détéctée"
@@ -267,11 +307,19 @@ update(){
 	else
 		echo -e "$NORMAL"""
 	fi
-	
+
 	echo -e "$BLEU""Recherche des mises à jour pour les plug-ins"
-	ACTUAL_PLUG_INS_VERSION=`bzr revno -q $CAIRO_DOCK_PLUG_INS_LP_BRANCH`
-	bzr update -q $CAIRO_DOCK_PLUG_INS_LP_BRANCH
+	if test -e "$BZR_REV_FILE_PLUG_INS"; then
+		ACTUAL_PLUG_INS_VERSION=`cat "$BZR_REV_FILE_PLUG_INS"`
+	else
+		echo 0 > "$BZR_REV_FILE_PLUG_INS"
+		ACTUAL_PLUG_INS_VERSION=0
+	fi
+	bzr $BZR_UP $CAIRO_DOCK_PLUG_INS_LP_BRANCH
 	NEW_PLUG_INS_VERSION=`bzr revno -q $CAIRO_DOCK_PLUG_INS_LP_BRANCH`
+	echo $NEW_PLUG_INS_VERSION > "$BZR_REV_FILE_PLUG_INS"
+	echo -e "\nCairo-Dock-Plug-Ins : rev $NEW_PLUG_INS_VERSION \n"
+	echo -e "\nCairo-Dock-Plug-Ins : rev $NEW_PLUG_INS_VERSION \n" >> $LOG_CAIRO_DOCK
 	
 	if [ $ACTUAL_PLUG_INS_VERSION -ne $NEW_PLUG_INS_VERSION ]; then		
 		echo -e "$VERT""Une mise à jour des plug-ins a été détéctée"
@@ -284,7 +332,7 @@ update(){
 	  
 	echo -e "$NORMAL"
     
-    if [ $UPDATE -eq 1 ]; then	
+ 	if [ $UPDATE -eq 1 ]; then
 	    check $LOG_CAIRO_DOCK "CD"
 	else
 		echo -e "$BLEU"
@@ -294,7 +342,7 @@ update(){
 		zenity --info --title=Cairo-Dock --text="Cliquez sur Ok pour fermer le terminal."
 		exit
 	fi
-
+	
 }
 
 
@@ -444,6 +492,15 @@ detect_distrib() {
 check_dependancies() {
 	
 	echo -e "$BLEU""Vérification des paquets nécéssaires à la compilation" 
+	
+	dpkg -s sudo |grep installed |grep "install ok" > /dev/null	
+		if [ $? -eq 1 ]; then #Debian
+			echo -e "$ROUGE"" Le paquet sudo n'est pas installé, veuillez l'installer avant de continuer \n 'sudo' package isn't installed. Please install it.""$NORMAL"""
+			exit
+		fi
+	
+	sudo -v
+	
 	for tested in $NEEDED
 	do
 		dpkg -s $tested |grep installed |grep "install ok" > /dev/null	
@@ -464,6 +521,19 @@ check_dependancies() {
 		if [ $? -eq 1 ]; then
 			echo -e "$ROUGE""Le paquet $NEEDED_XFCE n'est pas installé""$NORMAL"""
 			sudo apt-get install $NEEDED_XFCE
+		fi
+	fi
+	if [ $DISTRIB = 'karmic' ]; then #karmic
+		dpkg -s $NEEDED_KARMIC |grep installed |grep "install ok" > /dev/null	
+		if [ $? -eq 1 ]; then
+			echo -e "$ROUGE""Le paquet $NEEDED_KARMIC n'est pas installé""$NORMAL"""
+			sudo apt-get install $NEEDED_KARMIC
+		fi
+	else
+		dpkg -s $NEEDED_B_KARMIC |grep installed |grep "install ok" > /dev/null	
+		if [ $? -eq 1 ]; then
+			echo -e "$ROUGE""Le paquet $NEEDED_B_KARMIC n'est pas installé""$NORMAL"""
+			sudo apt-get install $NEEDED_B_KARMIC
 		fi
 	fi
 	
@@ -505,11 +575,11 @@ fi
 echo -e "$NORMAL""Script d'installation de la version BZR de Cairo-Dock\n"
 echo -e "Veuillez choisir l'option d'installation : \n"
 
-echo -e "\t1 --> Mettre à jour la version BZR installée"
-echo -e "\t2 --> Installer la version BZR pour la première fois"
-echo -e "\t3 --> Reinstaller la version BZR actuelle"
-echo -e "\t4 --> Désinstaller la version BZR"
-echo -e "\t5 --> A propos"
+echo -e "\t1 --> Mettre à jour la version BZR installée (Update)"
+echo -e "\t2 --> Installer la version BZR pour la première fois (Install)"
+echo -e "\t3 --> Reinstaller la version BZR actuelle (Renstall)"
+echo -e "\t4 --> Désinstaller la version BZR (Uninstall)"
+echo -e "\t5 --> A propos (About)"
 
 echo -e "\nVotre choix : "
 read answer_menu
@@ -546,11 +616,3 @@ case $answer_menu in
 	;;
 	
 esac
-
-
-
-
-
-
-
-
