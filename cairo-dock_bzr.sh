@@ -103,7 +103,7 @@ install_cairo_dock() {
 
 	rm -Rf $LOG_CAIRO_DOCK > /dev/null
 
-	echo "Installation de cairo-dock du `date`" >> $LOG_CAIRO_DOCK	
+	echo "Installation de cairo-dock du `date`" >> $LOG_CAIRO_DOCK
 
 	echo "" >> $LOG_CAIRO_DOCK
 	echo -e "$BLEU""Installation de cairo-dock"
@@ -113,7 +113,7 @@ install_cairo_dock() {
 	if [ $? -ne 0 ]; then
 		ERROR+=1
 		echo -e "$ROUGE""\tErreur"
-		check $LOG_CAIRO_DOCK "CD"	
+		check $LOG_CAIRO_DOCK "CD"
 	else
 		echo -e "$VERT""\tRéalisé avec succès"
 	fi
@@ -142,13 +142,13 @@ install_cairo_dock_plugins() {
 	echo -e "$BLEU""Installation des plug-ins"
 	
 	echo "Installation des plug-ins du `date`" >> $LOG_CAIRO_DOCK
-	echo "" >> $LOG_CAIRO_DOCK	
+	echo "" >> $LOG_CAIRO_DOCK
 
 	install_plugins >> $LOG_CAIRO_DOCK 2>&1
 
 	if [ $? -ne 0 ]; then
 		ERROR+=1
-		echo -e "$ROUGE""\tErreur"	
+		echo -e "$ROUGE""\tErreur"
 	else
 		echo -e "$VERT""\tRéalisé avec succès"
 	fi	
@@ -181,16 +181,27 @@ install(){
 
 	echo -e "$BLEU""C'est la première fois que vous installez la version BZR de Cairo-Dock"
 	echo -e "\nGrâce à l'outil bzr, vous pouvez désormais télécharger les sources de plusieurs façons, notamment télécharger tout le contenu de la branche (si vous souhaitez ultérieurement procéder à des modifications et les publier sur des branches différents) ou uniquement la dernière révision (si vous voulez simplement tester les dernières révisions)\n""$VERT"
-	echo -e "\t1 --> Télécharger la branche complète (~150Mo - pour les développeurs)\n\t\tDownload the complete branch (~150Mo - for dev.)"
-	echo -e "\t2 --> Télécharger la dernière version (~20Mo - pour tous utilisateurs)\n\t\tDownload only the last rev. (~20Mo - for all users)"
-	read BZR_DL_READ 
-	if [ $BZR_DL_READ -eq 1 ]; then
-		BZR_DL="branch"
-		BZR_DL_MODE=1
-	else
-		BZR_DL="checkout --lightweight -q"
-		BZR_DL_MODE=0
-	fi
+
+	BZR_DL_READ='0' # il nous faut un chaine pour prendre plus de cas
+	while [ $BZR_DL_READ != '1' ] && [ $BZR_DL_READ != '2' ]; do
+		echo -e "\t1 --> Télécharger la branche complète (~150Mo - pour les développeurs)\n\t\tDownload the complete branch (~150Mo - for dev.)"
+		echo -e "\t2 --> Télécharger la dernière version (~20Mo - pour tous utilisateurs)\n\t\tDownload only the last rev. (~20Mo - for all users)"
+		read BZR_DL_READ 
+	done
+
+	case $BZR_DL_READ in
+		"1")
+			echo -e "Mode choisi : branch\n"
+			BZR_DL="branch"
+			BZR_DL_MODE=1
+		;;
+		"" | "2")
+			echo -e "Mode choisi : checkout --lightweight\n"
+			BZR_DL="checkout --lightweight -q"
+			BZR_DL_MODE=0
+		;;
+	esac
+
 	echo $BZR_DL_MODE > $DIR/.bzr_dl
 	
 	echo -e "$BLEU""Téléchargement des données. Cette opération peut prendre quelques minutes"
@@ -233,13 +244,12 @@ install(){
 	echo -e "$NORMAL"
 
 	sleep 5
-	
+
 	install_cairo_dock
 
 	install_cairo_dock_plugins
 
 	check $LOG_CAIRO_DOCK "CD"
-	
 }
 
 
@@ -250,7 +260,7 @@ reinstall(){
 	install_cairo_dock
 
 	install_cairo_dock_plugins
-	
+
 	check $LOG_CAIRO_DOCK "CD"
 }
 
@@ -350,7 +360,7 @@ update(){
 	echo -e "\nCairo-Dock-Plug-Ins : rev $NEW_PLUG_INS_VERSION \n"
 	echo -e "\nCairo-Dock-Plug-Ins : rev $NEW_PLUG_INS_VERSION \n" >> $LOG_CAIRO_DOCK
 	
-	if [ $ACTUAL_PLUG_INS_VERSION -ne $NEW_PLUG_INS_VERSION ]; then		
+	if [ $ACTUAL_PLUG_INS_VERSION -ne $NEW_PLUG_INS_VERSION ]; then
 		echo -e "$VERT""Une mise à jour des plug-ins a été détéctée"
 		install_cairo_dock_plugins
 		UPDATE=1
@@ -407,10 +417,10 @@ check_new_script() {
 	cp $SCRIPT $SCRIPT_SAVE #pour moi :)
 	echo -e "$NORMAL"""
 	echo "Vérification de la disponibilité d'un nouveau script"
-	wget $HOST/$SCRIPT -q -O $SCRIPT_NEW	
+	wget $HOST/$SCRIPT -q -O $SCRIPT_NEW
 	diff $SCRIPT $SCRIPT_NEW >/dev/null
 	if [ $? -eq 1 ]; then
-		echo -e "$ROUGE"		
+		echo -e "$ROUGE"
 		echo "Veuillez relancer le script, une mise à jour a été téléchargée"
 		echo -e "$NORMAL"
 		mv $SCRIPT_NEW $SCRIPT
@@ -539,7 +549,7 @@ check_dependancies() {
 			exit
 		fi
 	
-	sudo -v
+	sudo -v # Pour que Nochka puisse aller regarder la tv en attendant la fin de la compilation ;-)
 	
 	for tested in $NEEDED
 	do
@@ -606,6 +616,7 @@ ppa_weekly() {
 	echo "Ajout du dépôt ppa weekly" >> $LOG_CAIRO_DOCK
 	echo -e "$NORMAL"""
 
+	sudo -v
 	echo -e "\nAjout du dépôt\n" >> $LOG_CAIRO_DOCK
 	echo "deb http://ppa.launchpad.net/cairo-dock-team/weekly/ubuntu $(lsb_release -sc) main ## Cairo-Dock-PPA-Weekly" | sudo tee -a /etc/apt/sources.list  >> $LOG_CAIRO_DOCK
 	echo -e "\nAjout de la clé\n" >> $LOG_CAIRO_DOCK
