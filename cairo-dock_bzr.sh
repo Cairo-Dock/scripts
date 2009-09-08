@@ -19,8 +19,11 @@
 
 
 #Changelog
-# 08/09/09 : 	fix de libxklavier, fix de revno, réduction des passphrases
+# 08/09/09 : 	matttbe : fix de libxklavier, fix de revno, réduction des passphrases
 #		possibilité de choisir bzr branch ou bzr checkout et d'installer les depôts weekly
+#		Menu différent si le dossier cairo-dock-core existe ou non
+#		On 'force' l'installation des paquets
+#		Ajout du menu avec -o et -c
 # 06/09/09 : 	Modification du script pour gérér BZR
 # 16/05/09 : 	Suppression de stacks
 # 15/05/09 : 	Suppression des themes, ajout de dnd2share et modification de la detection de la distrib (smo)
@@ -72,6 +75,7 @@ UPDATE_PLUG_INS=0
 UPDATE_CAIRO_DOCK=0
 ERROR=0
 DESKTOP_ENTRY_NAME=cairo-dock_bzr.desktop
+DESKTOP_ENTRY_NAME_GLX=glx-dock_bzr.desktop
 FULL_COMPILE=0
 DISTRIB=""
 INSTALL_CAIRO_DOCK_OK=1
@@ -178,7 +182,7 @@ install(){
 	echo -e "$BLEU""C'est la première fois que vous installez la version BZR de Cairo-Dock"
 	echo -e "\nGrâce à l'outil bzr, vous pouvez désormais télécharger les sources de plusieurs façons, notamment télécharger tout le contenu de la branche (si vous souhaitez ultérieurement procéder à des modifications et les publier sur des branches différents) ou uniquement la dernière révision (si vous voulez simplement tester les dernières révisions)\n""$VERT"
 	echo -e "\t1 --> Télécharger la branche complète (~150Mo - pour les développeurs)\n\t\tDownload the complete branch (~150Mo - for dev.)"
-	echo -e "\t2 --> Télécharger la dernière version (~25Mo - pour tous utilisateurs)\n\t\tDownload only the last rev. (~25Mo - for all users)"
+	echo -e "\t2 --> Télécharger la dernière version (~20Mo - pour tous utilisateurs)\n\t\tDownload only the last rev. (~20Mo - for all users)"
 	read BZR_DL_READ 
 	if [ $BZR_DL_READ -eq 1 ]; then
 		BZR_DL="branch"
@@ -431,33 +435,45 @@ check_new_script() {
 
 add_icon_to_gnome_menu() {
 		
-	if [ ! -e /usr/share/applications/$DESKTOP_ENTRY_NAME ]; then
+	if [ ! -e /usr/share/applications/$DESKTOP_ENTRY_NAME_GLX ]; then
 		echo -e "$BLEU"
 		echo "Ajout de l'icone Cairo-Dock BZR dans le menu Applications"
 		echo -e "$NORMAL"
-
 		sudo cp $DIR/$CAIRO_DOCK_CORE_LP_BRANCH/data/cairo-dock.svg /usr/share/pixmaps
-
 		cd $DIR
 
 		echo "[Desktop Entry]
-		Encoding=UTF-8
-		Name=Cairo-Dock BZR" > $DESKTOP_ENTRY_NAME
-		echo "Exec=cairo-dock" >> $DESKTOP_ENTRY_NAME
-		echo "Info=Cairo-Dock BZR
-		Categories=Application;Utility; 
-		Comment=Cairo-Dock BZR
-		Comment[fr]=Cairo-Dock BZR
-		Terminal=false
-		Type=Application
-		StartupNotify=true
-		Name[fr_FR]=Cairo-Dock BZR
-		Comment[fr_FR]=Cairo-Dock BZR
-		Icon[fr_FR]=/usr/share/pixmaps/cairo-dock.svg
-		Icon=/usr/share/pixmaps/cairo-dock.svg" >> $DESKTOP_ENTRY_NAME
+Type=Application
+Comment=A dock to launch your programs easily.
+Exec=cairo-dock -o
+Icon=cairo-dock.svg
+Terminal=false
 
-		sudo mv $DESKTOP_ENTRY_NAME /usr/share/applications/
+Name=Cairo-Dock with OpenGL (BZR)
+Name[fr]=Cairo-Dock avec l'OpenGL (BZR)
 
+GenericName=Multi-purpose Dock
+GenericName[fr]=Dock multi-usage
+Categories=Utility;" > $DESKTOP_ENTRY_NAME_GLX
+		sudo mv $DESKTOP_ENTRY_NAME_GLX /usr/share/applications/
+
+		if [ ! -e /usr/share/applications/$DESKTOP_ENTRY_NAME ]; then
+			echo "[Desktop Entry]
+Type=Application
+Exec=cairo-dock -c
+Icon=cairo-dock.svg
+Terminal=false
+
+Name=Cairo-Dock without OpenGL (BZR)
+Name[fr]=Cairo-Dock sans l'OpenGL (BZR)
+
+GenericName=Multi-purpose Dock
+GenericName[fr]=Dock multi-usage
+Categories=Utility;" > $DESKTOP_ENTRY_NAME
+			sudo mv $DESKTOP_ENTRY_NAME /usr/share/applications/
+		fi
+
+		echo ""
 		echo -e "$VERT""Effectué"
 		echo -e "$NORMAL"
 	fi
@@ -529,35 +545,35 @@ check_dependancies() {
 	do
 		dpkg -s $tested |grep installed |grep "install ok" > /dev/null	
 		if [ $? -eq 1 ]; then
-			echo -e "$ROUGE""Le paquet $tested n'est pas installé""$NORMAL"""
-			sudo apt-get install $tested
+			echo -e "$ROUGE""Le paquet $tested n'est pas installé : Installation""$NORMAL"""
+			sudo apt-get install -qq $tested  >> $LOG_CAIRO_DOCK
 		fi
 	done
 
 	if [ $ENV -eq 1 ]; then #Gnome
 		dpkg -s $NEEDED_GNOME |grep installed |grep "install ok" > /dev/null	
 		if [ $? -eq 1 ]; then
-			echo -e "$ROUGE""Le paquet $NEEDED_GNOME n'est pas installé""$NORMAL"""
-			sudo apt-get install $NEEDED_GNOME
+			echo -e "$ROUGE""Le paquet $NEEDED_GNOME n'est pas installé : Installation""$NORMAL"""
+			sudo apt-get install -qq $NEEDED_GNOME  >> $LOG_CAIRO_DOCK
 		fi
 	elif [ $ENV -eq 3 ]; then #XFCE
 		dpkg -s $NEEDED_XFCE |grep installed |grep "install ok" > /dev/null	
 		if [ $? -eq 1 ]; then
-			echo -e "$ROUGE""Le paquet $NEEDED_XFCE n'est pas installé""$NORMAL"""
-			sudo apt-get install $NEEDED_XFCE
+			echo -e "$ROUGE""Le paquet $NEEDED_XFCE n'est pas installé : Installation""$NORMAL"""
+			sudo apt-get install -qq $NEEDED_XFCE  >> $LOG_CAIRO_DOCK
 		fi
 	fi
 	if [ $DISTRIB = 'karmic' ]; then #karmic
 		dpkg -s $NEEDED_KARMIC |grep installed |grep "install ok" > /dev/null	
 		if [ $? -eq 1 ]; then
-			echo -e "$ROUGE""Le paquet $NEEDED_KARMIC n'est pas installé""$NORMAL"""
-			sudo apt-get install $NEEDED_KARMIC
+			echo -e "$ROUGE""Le paquet $NEEDED_KARMIC n'est pas installé : Installation""$NORMAL"""
+			sudo apt-get install -qq $NEEDED_KARMIC  >> $LOG_CAIRO_DOCK
 		fi
 	else
 		dpkg -s $NEEDED_B_KARMIC |grep installed |grep "install ok" > /dev/null	
 		if [ $? -eq 1 ]; then
-			echo -e "$ROUGE""Le paquet $NEEDED_B_KARMIC n'est pas installé""$NORMAL"""
-			sudo apt-get install $NEEDED_B_KARMIC
+			echo -e "$ROUGE""Le paquet $NEEDED_B_KARMIC n'est pas installé : Installation""$NORMAL"""
+			sudo apt-get install -qq $NEEDED_B_KARMIC  >> $LOG_CAIRO_DOCK
 		fi
 	fi
 	
@@ -574,9 +590,11 @@ ppa_weekly() {
 		exit
 	fi
 
-	echo -e "$VERT""Ajout du dépôt ppa weekly"
-	echo "Ajout du dépôt ppa weekly" >> $LOG_CAIRO_DOCK
-	echo -e "$NORMAL"""
+	if [ $(lsb_release -is) != 'Ubuntu' ]; then #uniquement Ubuntu supporté
+		echo -e "$ROUGE""Désolé mais ce dépôt n'offre un support que pour Ubuntu\n\tSorry but with ppa of launchpad we can only have a support for Ubuntu"
+		echo -e "$NORMAL"""
+		exit
+	fi
 
 	if [ -d $DIR/$CAIRO_DOCK_CORE_LP_BRANCH ]; then
 		echo -e "$BLEU""Désinstallation de la version BZR"
@@ -584,8 +602,12 @@ ppa_weekly() {
 		uninstall
 	fi
 
+	echo -e "$VERT""Ajout du dépôt ppa weekly"
+	echo "Ajout du dépôt ppa weekly" >> $LOG_CAIRO_DOCK
+	echo -e "$NORMAL"""
+
 	echo -e "\nAjout du dépôt\n" >> $LOG_CAIRO_DOCK
-	echo "deb http://ppa.launchpad.net/cairo-dock-team/weekly/ubuntu $(lsb_release -sc) main ## Cairo-Dock-PPA-Weekly" | sudo tee -a /etc/apt/sources.list 
+	echo "deb http://ppa.launchpad.net/cairo-dock-team/weekly/ubuntu $(lsb_release -sc) main ## Cairo-Dock-PPA-Weekly" | sudo tee -a /etc/apt/sources.list  >> $LOG_CAIRO_DOCK
 	echo -e "\nAjout de la clé\n" >> $LOG_CAIRO_DOCK
 	sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E80D6BF5 >> $LOG_CAIRO_DOCK
 	echo -e "\nMise à jour de la apt list\n" >> $LOG_CAIRO_DOCK
@@ -630,51 +652,72 @@ fi
 echo -e "$NORMAL""Script d'installation de la version BZR de Cairo-Dock\n"
 echo -e "Veuillez choisir l'option d'installation : \n"
 
-echo -e "\t1 --> Mettre à jour la version BZR installée (Update)"
-echo -e "\t2 --> Installer la version BZR pour la première fois (Install)"
-echo -e "\t3 --> Reinstaller la version BZR actuelle (Reinstall)"
-echo -e "\t4 --> Désinstaller la version BZR (Uninstall)"
-echo -e "\t5 --> Installer le ppa weekly au lieu de BZR (Install weekly ppa instead of BZR)"
-echo -e "\t6 --> A propos (About)"
+if [ -d $DIR/$CAIRO_DOCK_CORE_LP_BRANCH ]; then
+	echo -e "\t1 --> Mettre à jour la version BZR installée (Update)"
+	echo -e "\t2 --> Reinstaller la version BZR actuelle (Reinstall)"
+	echo -e "\t3 --> Désinstaller la version BZR (Uninstall)"
+	echo -e "\t4 --> Installer le ppa weekly au lieu de BZR (Install weekly ppa instead of BZR)"
+	echo -e "\t5 --> A propos (About)"
 
-echo -e "\nVotre choix : "
-read answer_menu
+	echo -e "\nVotre choix : "
+	read answer_menu
 
-case $answer_menu in
+	case $answer_menu in
 
-	"1")
-		detect_distrib
-		detect_env_graph
-		check_dependancies
-		update
-	;;
+		"1")
+			detect_distrib
+			detect_env_graph
+			check_dependancies
+			update
+		;;
 	
-	"2")
-		detect_distrib
-		detect_env_graph
-		check_dependancies
-		install
-	;;
+		"2")
+			detect_distrib
+			detect_env_graph
+			check_dependancies
+			reinstall
+		;;
 	
-	"3")
-		detect_distrib
-		detect_env_graph
-		check_dependancies
-		reinstall
-	;;
-	
-	"4")
-		uninstall
-		exit
-	;;
+		"3")
+			uninstall
+			exit
+		;;
 
-	"5")
-		detect_distrib
-		ppa_weekly
-	;;
+		"4")
+			detect_distrib
+			ppa_weekly
+		;;
 
-	"6")
-		about
-	;;
+		"5")
+			about
+		;;
 	
-esac
+	esac
+else
+	echo -e "\t1 --> Installer la version BZR pour la première fois (Install)"
+	echo -e "\t2 --> Installer le ppa weekly au lieu de BZR (Install weekly ppa instead of BZR)"
+	echo -e "\t3 --> A propos (About)"
+
+	echo -e "\nVotre choix : "
+	read answer_menu
+
+	case $answer_menu in
+	
+		"1")
+			detect_distrib
+			detect_env_graph
+			check_dependancies
+			install
+		;;
+
+		"2")
+			detect_distrib
+			ppa_weekly
+		;;
+
+		"3")
+			about
+		;;
+	
+	esac
+fi
