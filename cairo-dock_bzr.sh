@@ -24,6 +24,7 @@
 #		Menu différent si le dossier cairo-dock-core existe ou non
 #		On 'force' l'installation des paquets
 #		Ajout du menu avec -o et -c
+#		Fix pour branch => il faut d'abord se trouver dans le dossier !
 # 06/09/09 : 	Modification du script pour gérér BZR
 # 16/05/09 : 	Suppression de stacks
 # 15/05/09 : 	Suppression des themes, ajout de dnd2share et modification de la detection de la distrib (smo)
@@ -310,9 +311,11 @@ update(){
 	fi
 
 	if [ $BZR_DL_MODE -eq 1 ]; then
+		cd $DIR/$CAIRO_DOCK_CORE_LP_BRANCH
 		BZR_UP="pull"
-		bzr $BZR_UP $CAIRO_DOCK_CORE_LP_BRANCH
-		NEW_CORE_VERSION=`bzr revno -q $CAIRO_DOCK_CORE_LP_BRANCH`
+		bzr $BZR_UP lp:$CAIRO_DOCK_CORE_LP_BRANCH
+		NEW_CORE_VERSION=`bzr revno -q`
+		cd $DIR/
 	else
 		BZR_UP="update -q"
 		NEW_CORE_VERSION=`bzr revno -q $CAIRO_DOCK_CORE_LP_BRANCH`
@@ -347,8 +350,10 @@ update(){
 	fi
 
 	if [ $BZR_DL_MODE -eq 1 ]; then
-		bzr $BZR_UP $CAIRO_DOCK_PLUG_INS_LP_BRANCH
-		NEW_PLUG_INS_VERSION=`bzr revno -q $CAIRO_DOCK_PLUG_INS_LP_BRANCH`
+		cd $DIR/$CAIRO_DOCK_PLUG_INS_LP_BRANCH
+		bzr $BZR_UP lp:$CAIRO_DOCK_PLUG_INS_LP_BRANCH
+		NEW_PLUG_INS_VERSION=`bzr revno -q`
+		cd $DIR/
 	else
 		NEW_PLUG_INS_VERSION=`bzr revno -q $CAIRO_DOCK_PLUG_INS_LP_BRANCH`
 		if [ $ACTUAL_CORE_VERSION -ne $NEW_CORE_VERSION ]; then
