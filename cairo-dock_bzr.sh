@@ -19,6 +19,8 @@
 
 
 #Changelog
+# 13/09/09 : 	matttbe : ajout de mail et NM à compiler
+#		possibilité d'ajouter d'autres arguments avec, par exemple  './cairo-dock_bzr.sh -e "--enable-scooby-do"'
 # 08/09/09 : 	matttbe : fix de libxklavier, fix de revno, réduction des passphrases
 #		possibilité de choisir bzr branch ou bzr checkout et d'installer les depôts weekly
 #		Menu différent si le dossier cairo-dock-core existe ou non
@@ -80,6 +82,7 @@ DESKTOP_ENTRY_NAME_GLX=glx-dock_bzr.desktop
 FULL_COMPILE=0
 DISTRIB=""
 INSTALL_CAIRO_DOCK_OK=1
+CONFIGURE="--enable-mail --enable-network-monitor"
 
 if test -e "$DIR/.bzr_dl"; then
 	BZR_DL_MODE=`cat $DIR/.bzr_dl`
@@ -166,7 +169,7 @@ install_plugins() {
 	cd $DIR/$CAIRO_DOCK_PLUG_INS_LP_BRANCH
 	echo $(pwd)
 
-	autoreconf -isvf && ./configure --prefix=/usr && make clean && make -j $(grep -c ^processor /proc/cpuinfo)
+	autoreconf -isvf && ./configure --prefix=/usr $CONFIGURE && make clean && make -j $(grep -c ^processor /proc/cpuinfo)
 	
 	if [ $? -ne 0 ]; then
 		return 1
@@ -653,6 +656,8 @@ elif [ "$1" = "smo_update" ]; then
 	detect_env_graph
 	check_dependancies
 	update
+elif [ "$1" = "-e" ]; then
+	CONFIGURE="$CONFIGURE $2"
 fi
 	
 if [ $DEBUG -ne 1 ]; then
