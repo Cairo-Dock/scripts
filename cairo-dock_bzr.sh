@@ -19,6 +19,8 @@
 
 
 #Changelog
+# 15/09/09 : 	matttbe : ajout du dépôt debian et hardy + désinstallation des paquets de CD si installation par bzr.
+#		boucle pour ajouter des arguments, par ex './cairo-dock_bzr.sh -e "scooby-do"'. L'autre méthode est tjs ok.
 # 13/09/09 : 	matttbe : ajout de mail et NM à compiler
 #		possibilité d'ajouter d'autres arguments avec, par exemple  './cairo-dock_bzr.sh -e "--enable-scooby-do"'
 # 08/09/09 : 	matttbe : fix de libxklavier, fix de revno, réduction des passphrases
@@ -294,7 +296,6 @@ uninstall() {
 	echo "Cependant, votre dossier de configuration est toujours présent."
 	echo "Celui-ci se trouve dans votre /home/.config et se nomme cairo-dock (attention c'est un dossier caché)."
 	echo "Vous pouvez le supprimer une fois la désinstallation effectuée"
-	zenity --info --title=Cairo-Dock --text="Cairo-Dock a été désinstallé, veuillez lire le message dans le terminal"
 
 }
 
@@ -328,8 +329,8 @@ update(){
 	fi
 
 	echo $NEW_CORE_VERSION > $BZR_REV_FILE_CORE
-	echo -e "\nCairo-Dock-Core : rev $NEW_CORE_VERSION \n"
-	echo -e "\nCairo-Dock-Core : rev $NEW_CORE_VERSION \n" >> $LOG_CAIRO_DOCK
+	echo -e "\nCairo-Dock-Core : rev $ACTUAL_CORE_VERSION -> $NEW_CORE_VERSION \n"
+	echo -e "\nCairo-Dock-Core : rev $ACTUAL_CORE_VERSION -> $NEW_CORE_VERSION \n" >> $LOG_CAIRO_DOCK
 	
 	if [ $ACTUAL_CORE_VERSION -ne $NEW_CORE_VERSION ]; then
 		echo -e "$VERT""Une mise à jour de cairo-dock a été détéctée"
@@ -359,14 +360,14 @@ update(){
 		cd $DIR/
 	else
 		NEW_PLUG_INS_VERSION=`bzr revno -q $CAIRO_DOCK_PLUG_INS_LP_BRANCH`
-		if [ $ACTUAL_CORE_VERSION -ne $NEW_CORE_VERSION ]; then
+		if [ $ACTUAL_PLUG_INS_VERSION -ne $NEW_PLUG_INS_VERSION ]; then
 			bzr $BZR_UP $CAIRO_DOCK_PLUG_INS_LP_BRANCH
 		fi
 	fi
 
 	echo $NEW_PLUG_INS_VERSION > "$BZR_REV_FILE_PLUG_INS"
-	echo -e "\nCairo-Dock-Plug-Ins : rev $NEW_PLUG_INS_VERSION \n"
-	echo -e "\nCairo-Dock-Plug-Ins : rev $NEW_PLUG_INS_VERSION \n" >> $LOG_CAIRO_DOCK
+	echo -e "\nCairo-Dock-Plug-Ins : rev $ACTUAL_PLUG_INS_VERSION -> $NEW_PLUG_INS_VERSION \n"
+	echo -e "\nCairo-Dock-Plug-Ins : rev $ACTUAL_PLUG_INS_VERSION -> $NEW_PLUG_INS_VERSION \n" >> $LOG_CAIRO_DOCK
 	
 	if [ $ACTUAL_PLUG_INS_VERSION -ne $NEW_PLUG_INS_VERSION ]; then
 		echo -e "$VERT""Une mise à jour des plug-ins a été détéctée"
@@ -540,8 +541,11 @@ detect_distrib() {
 	if [ -n $DISTRIB ]; then
 		echo -e "$VERT""Votre distribution est $(grep -e DISTRIB_DESCRIPTION /etc/lsb-release | cut -d= -f2) ($DISTRIB)"
 		echo -e "$NORMAL"
+	elif [ $(grep -c ^Debian /etc/issue) -eq 1 ]; then
+		echo -e "$VERT""Votre distribution est Debian"
+		echo -e "$NORMAL"
 	else 
-		echo -e "$ROUGE""Impossible de déterminer la distribution"
+		echo -e "$ROUGE""Impossible de déterminer la distribution\nATTENTION : Ce script est prévu pour Ubuntu et Debian\nWARNING : This script is provided for Ubuntu and Debian"
 		echo -e "$NORMAL"
 	fi	
 }
@@ -558,6 +562,12 @@ check_dependancies() {
 		fi
 	
 	sudo -v # Pour que Nochka puisse aller regarder la tv en attendant la fin de la compilation ;-)
+	
+	dpkg -s cairo-dock |grep installed |grep "install ok" > /dev/null	
+		if [ $? -eq 0 ]; then #CD a été installé par paquet
+			echo -e "$ROUGE"" Désinstallation du paquet 'Cairo-Dock' \n Uninstallation of 'Cairo-Dock' package.""$NORMAL"""
+			sudo apt-get purge -qq cairo-dock
+		fi
 	
 	for tested in $NEEDED
 	do
@@ -602,20 +612,22 @@ check_dependancies() {
 
 
 ppa_weekly() {
-	if [ $DISTRIB = 'hardy' ]; then #hardy non supporté
-		echo -e "$ROUGE""Désolé mais ce dépôt n'offre pas de support pour Hardy\n\tCe n'est pas de ma faute si l'utilisation de debhelper est différente en fonction de la version de ce dernier :)"
-		echo -e "$NORMAL"""
-		exit
-	fi
-
-	if [ $(lsb_release -is) != 'Ubuntu' ]; then #uniquement Ubuntu supporté
-		echo -e "$ROUGE""Désolé mais ce dépôt n'offre un support que pour Ubuntu\n\tSorry but with ppa of launchpad we can only have a support for Ubuntu"
-		echo -e "$NORMAL"""
+	if [ $(grep -c ^Debian /etc/issue) -eq 1 ]; then
+		PPA="deb http://ppa.launchpad.net/cairo-dock-team/weekly-debian/ubuntu jaunty main ## Cairo-Dock-PPA-Weekly for Debian"
+		su -s
+		W_SUDO=""
+	elif [ $(grep -c ^Ubuntu /etc/issue) -eq 1 ]; then
+		LSB_RELEASE=`lsb_release -sc`
+		PPA="deb http://ppa.launchpad.net/cairo-dock-team/weekly/ubuntu $LSB_RELEASE main ## Cairo-Dock-PPA-Weekly"
+		sudo -v
+		W_SUDO="sudo"
+	else
+		echo -e "$ROUGE""Désolé, seuls Ubuntu et Debian sont supportés. En cas de problème, merci de nous contacter sur notre forum.\n Sorry but only Debian and Ubuntu are supported. If there is a problem, please contact us on our forum.""$NORMAL"""
 		exit
 	fi
 
 	if [ -d $DIR/$CAIRO_DOCK_CORE_LP_BRANCH ]; then
-		echo -e "$BLEU""Désinstallation de la version BZR"
+		echo -e "$BLEU""Désinstallation de la version BZR / Uninstallation of the BZR version"
 		echo -e "$NORMAL"""
 		uninstall
 	fi
@@ -624,17 +636,16 @@ ppa_weekly() {
 	echo "Ajout du dépôt ppa weekly" >> $LOG_CAIRO_DOCK
 	echo -e "$NORMAL"""
 
-	sudo -v
 	echo -e "\nAjout du dépôt\n" >> $LOG_CAIRO_DOCK
-	echo "deb http://ppa.launchpad.net/cairo-dock-team/weekly/ubuntu $(lsb_release -sc) main ## Cairo-Dock-PPA-Weekly" | sudo tee -a /etc/apt/sources.list  >> $LOG_CAIRO_DOCK
+	echo "$PPA" | $W_SUDO tee -a /etc/apt/sources.list  >> $LOG_CAIRO_DOCK
 	echo -e "\nAjout de la clé\n" >> $LOG_CAIRO_DOCK
-	sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E80D6BF5 >> $LOG_CAIRO_DOCK
+	$W_SUDO apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E80D6BF5 >> $LOG_CAIRO_DOCK
 	echo -e "\nMise à jour de la apt list\n" >> $LOG_CAIRO_DOCK
-	sudo apt-get update  >> $LOG_CAIRO_DOCK
+	$W_SUDO apt-get update  >> $LOG_CAIRO_DOCK
 	echo -e "\nInstallation\n" >> $LOG_CAIRO_DOCK
 	echo -e "$BLEU""Installation des paquets Cairo-Dock, version instable"
 	echo -e "$NORMAL"""
-	sudo apt-get install cairo-dock  >> $LOG_CAIRO_DOCK
+	$W_SUDO apt-get install cairo-dock  >> $LOG_CAIRO_DOCK
 	zenity --info --title=Cairo-Dock --text="Cliquez sur Ok pour fermer le terminal."
 	exit
 }
@@ -656,8 +667,18 @@ elif [ "$1" = "smo_update" ]; then
 	detect_env_graph
 	check_dependancies
 	update
-elif [ "$1" = "-e" ]; then
-	CONFIGURE="$CONFIGURE $2"
+elif [ "$1" = "-e" ]; then # possibilité d'ajouter des args
+	ARGS=$2
+	echo "$ARGS" > $DIR/.args
+	if [ $(grep -c ^enable $DIR/.args) -eg 1 ]; then # s'il y a au-moins un enable
+		CONFIGURE="$CONFIGURE $ARGS"
+	else
+		for arg in $ARGS
+		do
+			CONFIGURE="$CONFIGURE --enable-$arg"
+		done
+	fi
+	rm -f $DIR/.args
 fi
 	
 if [ $DEBUG -ne 1 ]; then
@@ -701,11 +722,11 @@ if [ -d $DIR/$CAIRO_DOCK_CORE_LP_BRANCH ]; then
 	
 		"3")
 			uninstall
+			zenity --info --title=Cairo-Dock --text="Cairo-Dock a été désinstallé, veuillez lire le message dans le terminal"
 			exit
 		;;
 
 		"4")
-			detect_distrib
 			ppa_weekly
 		;;
 
@@ -732,7 +753,6 @@ else
 		;;
 
 		"2")
-			detect_distrib
 			ppa_weekly
 		;;
 
