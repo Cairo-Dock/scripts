@@ -21,6 +21,7 @@
 #Changelog
 # 15/09/09 : 	matttbe : ajout du dépôt debian et hardy + désinstallation des paquets de CD si installation par bzr.
 #		boucle pour ajouter des arguments, par ex './cairo-dock_bzr.sh -e "scooby-do"'. L'autre méthode est tjs ok.
+#		+ curl dans les dep + reload auto en cas de nouvelle version
 # 13/09/09 : 	matttbe : ajout de mail et NM à compiler
 #		possibilité d'ajouter d'autres arguments avec, par exemple  './cairo-dock_bzr.sh -e "--enable-scooby-do"'
 # 08/09/09 : 	matttbe : fix de libxklavier, fix de revno, réduction des passphrases
@@ -430,12 +431,12 @@ check_new_script() {
 	diff $SCRIPT $SCRIPT_NEW >/dev/null
 	if [ $? -eq 1 ]; then
 		echo -e "$ROUGE"
-		echo "Veuillez relancer le script, une mise à jour a été téléchargée"
+		echo "Une mise à jour a été téléchargée"
 		echo -e "$NORMAL"
 		mv $SCRIPT_NEW $SCRIPT
 		sudo chmod u+x $SCRIPT
-		zenity --info --title=Cairo-Dock --text="Cliquez sur Ok pour fermer le terminal."
-		exit
+		zenity --info --title=Cairo-Dock --text="Cliquez sur Ok pour relancer le script."
+		./$SCRIPT
 	else
 		echo ""
 		echo -e "$VERT""Vous possédez la dernière version du script de M@v"
