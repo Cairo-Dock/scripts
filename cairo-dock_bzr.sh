@@ -19,6 +19,7 @@
 
 
 #Changelog
+# 16/09/09 : 	nochka85 : Fix du message si on n'a jamais installé le dock par paquet
 # 15/09/09 : 	matttbe : ajout du dépôt debian et hardy + désinstallation des paquets de CD si installation par bzr.
 #		boucle pour ajouter des arguments, par ex './cairo-dock_bzr.sh -e "scooby-do"'. L'autre méthode est tjs ok.
 #		+ curl dans les dep + reload auto en cas de nouvelle version
@@ -564,11 +565,11 @@ check_dependancies() {
 	
 	sudo -v # Pour que Nochka puisse aller regarder la tv en attendant la fin de la compilation ;-)
 	
-	dpkg -s cairo-dock |grep installed |grep "install ok" > /dev/null	
-		if [ $? -eq 0 ]; then #CD a été installé par paquet
-			echo -e "$ROUGE"" Désinstallation du paquet 'Cairo-Dock' \n Uninstallation of 'Cairo-Dock' package.""$NORMAL"""
-			sudo apt-get purge -qq cairo-dock
-		fi
+	sudo apt-get install -s cairo-dock | grep Inst > /dev/null	
+	if [ $? -eq 1 ]; then  #CD est installé par paquet
+		echo -e "$ROUGE"" Désinstallation du paquet 'Cairo-Dock' \n Uninstallation of 'Cairo-Dock' package.""$NORMAL"""
+		sudo apt-get purge -qq cairo-dock
+	fi
 	
 	for tested in $NEEDED
 	do
