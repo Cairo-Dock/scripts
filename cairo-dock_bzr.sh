@@ -20,6 +20,7 @@
 
 #Changelog
 # 16/09/09 : 	nochka85 : Fix du message si on n'a jamais installé le dock par paquet
+#		matttbe : fix erreur au reload
 # 15/09/09 : 	matttbe : ajout du dépôt debian et hardy + désinstallation des paquets de CD si installation par bzr.
 #		boucle pour ajouter des arguments, par ex './cairo-dock_bzr.sh -e "scooby-do"'. L'autre méthode est tjs ok.
 #		+ curl dans les dep + reload auto en cas de nouvelle version
@@ -437,7 +438,9 @@ check_new_script() {
 		mv $SCRIPT_NEW $SCRIPT
 		sudo chmod u+x $SCRIPT
 		zenity --info --title=Cairo-Dock --text="Cliquez sur Ok pour relancer le script."
+		rm $SCRIPT_NEW
 		./$SCRIPT
+		exit
 	else
 		echo ""
 		echo -e "$VERT""Vous possédez la dernière version du script de M@v"
