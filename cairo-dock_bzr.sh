@@ -19,6 +19,7 @@
 
 
 #Changelog
+# 18/09/09 : 	matttbe : on enlève le lanceur devenu inutil.
 # 16/09/09 : 	nochka85 : Fix du message si on n'a jamais installé le dock par paquet
 #		matttbe : fix erreur au reload
 # 15/09/09 : 	matttbe : ajout du dépôt debian et hardy + désinstallation des paquets de CD si installation par bzr.
@@ -82,8 +83,6 @@ UPDATE=0
 UPDATE_PLUG_INS=0
 UPDATE_CAIRO_DOCK=0
 ERROR=0
-DESKTOP_ENTRY_NAME=cairo-dock_bzr.desktop
-DESKTOP_ENTRY_NAME_GLX=glx-dock_bzr.desktop
 FULL_COMPILE=0
 DISTRIB=""
 INSTALL_CAIRO_DOCK_OK=1
@@ -388,7 +387,6 @@ update(){
 	else
 		echo -e "$BLEU""Pas de mise à jour disponible"
 		echo -e "$NORMAL"
-		add_icon_to_gnome_menu
 		zenity --info --title=Cairo-Dock --text="Cliquez sur Ok pour fermer le terminal."
 		exit
 	fi
@@ -417,7 +415,6 @@ check() {
 			echo -e "$VERT"
 			echo "L'installation s'est terminée correctement."
 			echo -e "$NORMAL"
-			add_icon_to_gnome_menu
 			zenity --info --title=Cairo-Dock --text="Cliquez sur Ok pour fermer le terminal"
 			exit
 		fi
@@ -438,7 +435,6 @@ check_new_script() {
 		mv $SCRIPT_NEW $SCRIPT
 		sudo chmod u+x $SCRIPT
 		zenity --info --title=Cairo-Dock --text="Cliquez sur Ok pour relancer le script."
-		rm $SCRIPT_NEW
 		./$SCRIPT
 		exit
 	else
@@ -454,55 +450,6 @@ check_new_script() {
 #######################################################################
 #	Autres fonctions
 #######################################################################
-
-
-
-add_icon_to_gnome_menu() {
-		
-	if [ ! -e /usr/share/applications/$DESKTOP_ENTRY_NAME_GLX ]; then
-		echo -e "$BLEU"
-		echo "Ajout de l'icone Cairo-Dock BZR dans le menu Applications"
-		echo -e "$NORMAL"
-		sudo cp $DIR/$CAIRO_DOCK_CORE_LP_BRANCH/data/cairo-dock.svg /usr/share/pixmaps
-		cd $DIR
-
-		echo "[Desktop Entry]
-Type=Application
-Comment=A dock to launch your programs easily.
-Exec=cairo-dock -o
-Icon=cairo-dock.svg
-Terminal=false
-
-Name=Cairo-Dock with OpenGL (BZR)
-Name[fr]=Cairo-Dock avec l'OpenGL (BZR)
-
-GenericName=Multi-purpose Dock
-GenericName[fr]=Dock multi-usage
-Categories=Utility;" > $DESKTOP_ENTRY_NAME_GLX
-		sudo mv $DESKTOP_ENTRY_NAME_GLX /usr/share/applications/
-
-		if [ ! -e /usr/share/applications/$DESKTOP_ENTRY_NAME ]; then
-			echo "[Desktop Entry]
-Type=Application
-Exec=cairo-dock -c
-Icon=cairo-dock.svg
-Terminal=false
-
-Name=Cairo-Dock without OpenGL (BZR)
-Name[fr]=Cairo-Dock sans l'OpenGL (BZR)
-
-GenericName=Multi-purpose Dock
-GenericName[fr]=Dock multi-usage
-Categories=Utility;" > $DESKTOP_ENTRY_NAME
-			sudo mv $DESKTOP_ENTRY_NAME /usr/share/applications/
-		fi
-
-		echo ""
-		echo -e "$VERT""Effectué"
-		echo -e "$NORMAL"
-	fi
-
-}
 
 
 detect_env_graph() 
