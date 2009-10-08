@@ -50,6 +50,7 @@ do
 			Description_distrib="Ubuntu Hardy 8.04"
 			;;
 	esac
+	mkdir $MainDir/cairo-dock/
 	
 	for archi in $Architecture
 	do
@@ -95,6 +96,7 @@ do
 
 	echo "\tGeneration du fichier Release.gpg\n\n"
 	# sign Release file
+	$MainDir/Release.gpg
 	gpg --sign -bao $MainDir/Release.gpg $MainDir/Release
 done
 # end.
