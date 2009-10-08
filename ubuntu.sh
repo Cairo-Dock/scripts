@@ -11,9 +11,14 @@ echo "Disposition des paquets deb et leur dsc :
 \t|-dists
 \t|-----|-distrib (-> $Ubuntu_Distrib)
 \t|-----|-----|-pool
-\t|-----|-----|-----|-cairo-dock
-\t|-----|-----|-----|-cairo-dock-plug-ins
-\t|-----|-----|-----|-(webkit) => hardy
+\t|-----|-----|-----|-all
+\t|-----|-----|-----|-----|-cairo-dock
+\t|-----|-----|-----|-----|-cairo-dock-plug-ins
+\t|-----|-----|-----|-----|-(webkit) => hardy
+\t|-----|-----|-----|-architecture (-> $Architecture)
+\t|-----|-----|-----|-----|-cairo-dock
+\t|-----|-----|-----|-----|-cairo-dock-plug-ins
+\t|-----|-----|-----|-----|-(webkit) => hardy
 Depot pour Ubuntu :
 \tversions : $Ubuntu_Distrib
 \tarchitectures : $Architecture
@@ -54,7 +59,8 @@ do
 
 		# create index for each distribution and architecture
 		echo "\tGeneration des fichiers d'index pour Ubuntu $distrib - Architecture : $archi" 
-		apt-ftparchive packages $PoolDir > $Dir/Packages
+		apt-ftparchive packages $PoolDir/all > $Dir/Packages
+		apt-ftparchive packages $PoolDir/$archi >> $Dir/Packages
 		cat $Dir/Packages | gzip -9c > $Dir/Packages.gz
 		cat $Dir/Packages | bzip2 > $Dir/Packages.bz2
 		
