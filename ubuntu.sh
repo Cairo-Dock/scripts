@@ -3,13 +3,16 @@
 Arg=$1
 Ubuntu_Distrib="hardy intrepid jaunty karmic"
 Architecture="i386 amd64 lpia"
+CD_key="41317877"
+
+debug_mv="mv"	# déplace les fichiers (mv) ou copier (cp)
 
 
 ## Fonctions ##
 
 dossiers() {
 	if test -d dists; then
-		read -p "Supprimer le dossier Dists ? (o/N)" RmDists
+		read -p "Supprimer le dossier 'dists' ? (o/N)" RmDists
 		if test "$RmDists" = "o" -o  "$RmDists" = "O"; then
 			rm -r dists
 		fi
@@ -39,9 +42,75 @@ dossiers() {
 	done
 }
 
+paquets() {
+	if ! test -d Incoming; then
+		echo "Il faut respecter cette structure :
+		|-Incoming
+		|-----|-cairo-dock
+		|-----|-cairo-dock-plug-ins
+		|-----|-webkit"
+		read -p "Créer ces dossiers (O) / Continuer (c) / Stop (s) ?" paquets_suite
+		if test "$paquets_suite" = "c" -o  "$paquets_suite" = "C"; then
+			paquets_question
+		elif test "$paquets_suite" = "s" -o  "$paquets_suite" = "S"; then
+			echo "Stop"
+			exit 0
+		else
+			mkdir -p Incoming/cairo-dock
+			mkdir Incoming/cairo-dock-plug-ins
+			mkdir Incoming/webkit
+			echo "\tIl faut placer les paquets deb dedans et relancer le script"
+			exit 0
+		fi
+	fi
+
+	if test -d dists; then
+		read -p "Supprimer le dossier 'dists' ? (o/n)" RmDists
+		if test "$RmDists" = "n" -o  "$RmDists" = "N"; then
+			echo "Stop"
+			exit 0
+		fi
+		rm -r dists
+	fi
+	dossiers
+
+	for distrib in $Ubuntu_Distrib
+	do
+		MainDir=dists/$distrib
+		PoolDir=$MainDir/pool
+		echo "\n\t$distrib"
+			# all
+		$debug_mv Incoming/cairo-dock/cairo-dock_*~"$distrib"_all.deb $PoolDir/all/cairo-dock
+		$debug_mv Incoming/cairo-dock/cairo-dock-data*~"$distrib"_all.deb $PoolDir/all/cairo-dock
+		if test "$distrib" = "hardy"; then
+			data_plug_ins=`ls Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins-data_*_all.deb | tail -n 1`
+			cp $data_plug_ins $PoolDir/all/cairo-dock-plug-ins
+			cp Incoming/webkit/libwebkit-*_all.deb $PoolDir/all/webkit
+		else
+			$debug_mv Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins-data_*~"$distrib"_all.deb $PoolDir/all/cairo-dock-plug-ins
+		fi
+		for archi in $Architecture
+		do
+			$debug_mv Incoming/cairo-dock/cairo-dock-core*~"$distrib"_$archi.deb $PoolDir/$archi/cairo-dock
+			$debug_mv Incoming/cairo-dock/cairo-dock-dev*~"$distrib"_$archi.deb $PoolDir/$archi/cairo-dock
+			if test "$distrib" = "hardy"; then
+				core_plug_ins=`ls Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins_*_$archi.deb | tail -n 1`
+				cp $core_plug_ins $PoolDir/$archi/cairo-dock-plug-ins
+				integration_plug_ins=`ls Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins-integration_*_$archi.deb | tail -n 1`
+				cp $integration_plug_ins $PoolDir/$archi/cairo-dock-plug-ins
+				cp Incoming/webkit/libwebkit-*_$archi.deb $PoolDir/$archi/webkit
+			else
+				$debug_mv Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins_*~"$distrib"_$archi.deb $PoolDir/$archi/cairo-dock-plug-ins
+				$debug_mv Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins-integration_*~"$distrib"_$archi.deb $PoolDir/$archi/cairo-dock-plug-ins
+			fi
+		done
+	done
+}
+
 depot() {
 	for distrib in $Ubuntu_Distrib
 	do
+		echo "\tUbuntu $distrib" 
 		MainDir=dists/$distrib
 		PoolDir=$MainDir/pool
 		case $distrib in
@@ -66,34 +135,31 @@ depot() {
 	
 		for archi in $Architecture
 		do
-			echo "Generation des fichiers necessaires au depot pour Ubuntu $distrib - Architecture : $archi" 
+			echo "\t\tArchitecture : $archi" 
 			Dir=$MainDir/cairo-dock/binary-$archi
 			mkdir $Dir
 
 			# create index for each distribution and architecture
-			echo "\tGeneration des fichiers d'index pour Ubuntu $distrib - Architecture : $archi" 
+			echo "\t\t\tPackages - $archi" 
 			apt-ftparchive packages $PoolDir/all > $Dir/Packages
 			apt-ftparchive packages $PoolDir/$archi >> $Dir/Packages
 			cat $Dir/Packages | gzip -9c > $Dir/Packages.gz
 			cat $Dir/Packages | bzip2 > $Dir/Packages.bz2
 		
-			echo "\tGeneration du fichier Release propre a la distribution et à l'archi"
-			#rm -f $Dir/Release*
+			echo "\t\t\tRelease - $archi"
 			Date=`date`
-			echo "Archive: $distrib" >> $Dir/Release
+			echo "Archive: $distrib" > $Dir/Release
 			echo "Version: $Version_distrib" >> $Dir/Release
 			echo "Components: cairo-dock" >> $Dir/Release
 			echo "Origin: Cairo-Dock Team" >> $Dir/Release
 			echo "Label: Ubuntu" >> $Dir/Release
 			echo "Architectures: $archi" >> $Dir/Release
-			echo "\t\tFichiers genere"
 		done
 
 		# create Release file
-		echo "\n\tGeneration du fichier Release propre a la distribution"
-		#rm -f $MainDir/Release*
+		echo "\n\t\tRelease : $distrib"
 		Date=`date`
-		echo "Origin: Cairo-Dock Team" >> $MainDir/Release
+		echo "Origin: Cairo-Dock Team" > $MainDir/Release
 		echo "Label: Ubuntu" >> $MainDir/Release
 		echo "Suite: $distrib" >> $MainDir/Release
 		echo "Version: $Version_distrib" >> $MainDir/Release
@@ -103,19 +169,28 @@ depot() {
 		echo "Components: cairo-dock" >> $MainDir/Release
 		echo "Description: $Description_distrib" >> $MainDir/Release
 
-		echo "\tGeneration des MD5, SHA1 et SHA256 dans le release principal"
+		echo "\t\t\tMD5, SHA1 et SHA256 : $distrib"
 		apt-ftparchive release $MainDir >> $MainDir/Release
 
-		echo "\tGeneration du fichier Release.gpg\n\n"
+		echo "\t\t\tRelease.gpg : $distrib\n\n"
 		# sign Release file
-		$MainDir/Release.gpg
-		gpg --sign -u 41317877 -bao $MainDir/Release.gpg $MainDir/Release
+		gpg --sign -u $CD_key -bao $MainDir/Release.gpg $MainDir/Release
 	done
+}
+
+paquets_question() {
+	paquets
+	read -p "Créer les fichiers release et Packages ? [O/n]" suite
+	if test "$suite" = "n" -o  "$suite" = "N"; then
+		echo "Stop"
+		exit 0
+	fi
+	depot
 }
 
 ## Main ##
 
-echo "Disposition des paquets deb et leur dsc :
+echo "Disposition des paquets deb :
 \t|-dists
 \t|-----|-distrib (-> $Ubuntu_Distrib)
 \t|-----|-----|-pool
@@ -127,15 +202,24 @@ echo "Disposition des paquets deb et leur dsc :
 \t|-----|-----|-----|-----|-cairo-dock
 \t|-----|-----|-----|-----|-cairo-dock-plug-ins
 \t|-----|-----|-----|-----|-(webkit) => hardy
+Possibilité de les arranger automatiquement si on a :
+\t|-Incoming
+\t|-----|-cairo-dock
+\t|-----|-cairo-dock-plug-ins
+\t|-----|-webkit
 Depot pour Ubuntu :
 \tversions : $Ubuntu_Distrib
 \tarchitectures : $Architecture
-\nContinuer [O] / Créer ces dossiers [d] / Stop [n] ?"
+
+Créer release et Packages [O] / Créer les dossiers de dists [d]
+ Déplacer les paquets Incoming -> dists [p] / Stop [n]\t\t=> [O/d/p/n]"
 read pause
 if test "$pause" = "n" -o  "$pause" = "N"; then
 	exit 0
 elif test "$pause" = "d" -o  "$pause" = "D"; then
 	dossiers
+elif test "$pause" = "p" -o  "$pause" = "P"; then
+	paquets_question
 else
 	depot
 fi
