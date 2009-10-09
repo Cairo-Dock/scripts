@@ -5,7 +5,7 @@ Architecture="i386 amd64 lpia"
 #Version_CD=`cairo-dock --version`
 #read -p "La version de CD ? Par exemple '`cairo-dock --version`' :" Version_CD
 
-GPGHome=$HOME/.gnupg/
+# GPGHome=$HOME/.gnupg/
 
 echo "Disposition des paquets deb et leur dsc :
 \t|-dists
@@ -97,6 +97,6 @@ do
 	echo "\tGeneration du fichier Release.gpg\n\n"
 	# sign Release file
 	$MainDir/Release.gpg
-	gpg --sign -bao $MainDir/Release.gpg $MainDir/Release
+	gpg --sign -u 41317877 -bao $MainDir/Release.gpg $MainDir/Release
 done
 # end.
