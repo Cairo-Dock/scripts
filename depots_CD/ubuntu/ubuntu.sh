@@ -1,6 +1,6 @@
 #!/bin/sh
 
-Arg=$1
+ARG1=$1
 Ubuntu_Distrib="hardy intrepid jaunty karmic"
 Architecture="i386 amd64 lpia"
 CD_key="41317877"
@@ -74,6 +74,7 @@ paquets() {
 	fi
 	dossiers
 
+	echo "Déplacement des paquets :"
 	for distrib in $Ubuntu_Distrib
 	do
 		MainDir=dists/$distrib
@@ -84,7 +85,7 @@ paquets() {
 		$debug_mv Incoming/cairo-dock/cairo-dock-data*~"$distrib"_all.deb $PoolDir/all/cairo-dock
 		if test "$distrib" = "hardy"; then
 			data_plug_ins=`ls Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins-data_*_all.deb | tail -n 1`
-			cp $data_plug_ins $PoolDir/all/cairo-dock-plug-ins
+			$debug_mv $data_plug_ins $PoolDir/all/cairo-dock-plug-ins
 			cp Incoming/webkit/libwebkit-*_all.deb $PoolDir/all/webkit
 		else
 			$debug_mv Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins-data_*~"$distrib"_all.deb $PoolDir/all/cairo-dock-plug-ins
@@ -95,9 +96,9 @@ paquets() {
 			$debug_mv Incoming/cairo-dock/cairo-dock-dev*~"$distrib"_$archi.deb $PoolDir/$archi/cairo-dock
 			if test "$distrib" = "hardy"; then
 				core_plug_ins=`ls Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins_*_$archi.deb | tail -n 1`
-				cp $core_plug_ins $PoolDir/$archi/cairo-dock-plug-ins
+				$debug_mv $core_plug_ins $PoolDir/$archi/cairo-dock-plug-ins
 				integration_plug_ins=`ls Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins-integration_*_$archi.deb | tail -n 1`
-				cp $integration_plug_ins $PoolDir/$archi/cairo-dock-plug-ins
+				$debug_mv $integration_plug_ins $PoolDir/$archi/cairo-dock-plug-ins
 				cp Incoming/webkit/libwebkit-*_$archi.deb $PoolDir/$archi/webkit
 			else
 				$debug_mv Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins_*~"$distrib"_$archi.deb $PoolDir/$archi/cairo-dock-plug-ins
@@ -108,6 +109,7 @@ paquets() {
 }
 
 depot() {
+	echo "Création des fichiers release et Packages"
 	for distrib in $Ubuntu_Distrib
 	do
 		echo "\tUbuntu $distrib" 
@@ -190,15 +192,19 @@ paquets_question() {
 
 ## Main ##
 
-echo "Disposition des paquets deb :
+if [ "$ARG1" = "-p" ]; then
+	paquets
+	depot
+else
+	echo "Disposition des paquets deb :
 \t|-dists
-\t|-----|-distrib (-> $Ubuntu_Distrib)
+\t|-----|-'distrib' (-> $Ubuntu_Distrib)
 \t|-----|-----|-pool
 \t|-----|-----|-----|-all
 \t|-----|-----|-----|-----|-cairo-dock
 \t|-----|-----|-----|-----|-cairo-dock-plug-ins
 \t|-----|-----|-----|-----|-(webkit) => hardy
-\t|-----|-----|-----|-architecture (-> $Architecture)
+\t|-----|-----|-----|-'architecture' (-> $Architecture)
 \t|-----|-----|-----|-----|-cairo-dock
 \t|-----|-----|-----|-----|-cairo-dock-plug-ins
 \t|-----|-----|-----|-----|-(webkit) => hardy
@@ -213,15 +219,14 @@ Depot pour Ubuntu :
 
 Créer release et Packages [O] / Créer les dossiers de dists [d]
  Déplacer les paquets Incoming -> dists [p] / Stop [n]\t\t=> [O/d/p/n]"
-read pause
-if test "$pause" = "n" -o  "$pause" = "N"; then
-	exit 0
-elif test "$pause" = "d" -o  "$pause" = "D"; then
-	dossiers
-elif test "$pause" = "p" -o  "$pause" = "P"; then
-	paquets_question
-else
-	depot
+	read pause
+	if test "$pause" = "n" -o  "$pause" = "N"; then
+		exit 0
+	elif test "$pause" = "d" -o  "$pause" = "D"; then
+		dossiers
+	elif test "$pause" = "p" -o  "$pause" = "P"; then
+		paquets_question
+	else
+		depot
+	fi
 fi
-
-exit 0
