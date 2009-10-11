@@ -5,7 +5,7 @@ Debian_Distrib="stable unstable"
 Architecture="i386 amd64 lpia"
 CD_key="41317877"
 
-debug_mv="mv"
+debug_mv="cp"
 
 
 ## Fonctions ##

@@ -5,7 +5,7 @@ Ubuntu_Distrib="hardy intrepid jaunty karmic"
 Architecture="i386 amd64 lpia"
 CD_key="41317877"
 
-debug_mv="mv"	# déplace les fichiers (mv) ou copier (cp)
+debug_mv="cp"	# déplace les fichiers (mv) ou copier (cp)
 
 
 ## Fonctions ##
@@ -27,17 +27,11 @@ dossiers() {
 		mkdir $PoolDir/all
 		mkdir $PoolDir/all/cairo-dock
 		mkdir $PoolDir/all/cairo-dock-plug-ins
-		if test "$distrib" = "hardy"; then
-			mkdir $PoolDir/all/webkit
-		fi
 		for archi in $Architecture
 		do
 			mkdir $PoolDir/$archi
 			mkdir $PoolDir/$archi/cairo-dock
 			mkdir $PoolDir/$archi/cairo-dock-plug-ins
-			if test "$distrib" = "hardy"; then
-				mkdir $PoolDir/$archi/webkit
-			fi
 		done
 	done
 }
@@ -47,8 +41,7 @@ paquets() {
 		echo "Il faut respecter cette structure :
 		|-Incoming
 		|-----|-cairo-dock
-		|-----|-cairo-dock-plug-ins
-		|-----|-webkit"
+		|-----|-cairo-dock-plug-ins"
 		read -p "Créer ces dossiers (O) / Continuer (c) / Stop (s) ?" paquets_suite
 		if test "$paquets_suite" = "c" -o  "$paquets_suite" = "C"; then
 			paquets_question
@@ -58,7 +51,6 @@ paquets() {
 		else
 			mkdir -p Incoming/cairo-dock
 			mkdir Incoming/cairo-dock-plug-ins
-			mkdir Incoming/webkit
 			echo "\tIl faut placer les paquets deb dedans et relancer le script"
 			exit 0
 		fi
@@ -82,28 +74,14 @@ paquets() {
 		echo "\n\t$distrib"
 			# all
 		$debug_mv Incoming/cairo-dock/cairo-dock_*~"$distrib"_all.deb $PoolDir/all/cairo-dock
-		$debug_mv Incoming/cairo-dock/cairo-dock-data*~"$distrib"_all.deb $PoolDir/all/cairo-dock
-		if test "$distrib" = "hardy"; then
-			data_plug_ins=`ls Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins-data_*_all.deb | tail -n 1`
-			$debug_mv $data_plug_ins $PoolDir/all/cairo-dock-plug-ins
-			cp Incoming/webkit/libwebkit-*_all.deb $PoolDir/all/webkit
-		else
-			$debug_mv Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins-data_*~"$distrib"_all.deb $PoolDir/all/cairo-dock-plug-ins
-		fi
+		$debug_mv Incoming/cairo-dock/cairo-dock-data_*~"$distrib"_all.deb $PoolDir/all/cairo-dock
+		$debug_mv Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins-data_*~"$distrib"_all.deb $PoolDir/all/cairo-dock-plug-ins
 		for archi in $Architecture
 		do
 			$debug_mv Incoming/cairo-dock/cairo-dock-core*~"$distrib"_$archi.deb $PoolDir/$archi/cairo-dock
 			$debug_mv Incoming/cairo-dock/cairo-dock-dev*~"$distrib"_$archi.deb $PoolDir/$archi/cairo-dock
-			if test "$distrib" = "hardy"; then
-				core_plug_ins=`ls Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins_*_$archi.deb | tail -n 1`
-				$debug_mv $core_plug_ins $PoolDir/$archi/cairo-dock-plug-ins
-				integration_plug_ins=`ls Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins-integration_*_$archi.deb | tail -n 1`
-				$debug_mv $integration_plug_ins $PoolDir/$archi/cairo-dock-plug-ins
-				cp Incoming/webkit/libwebkit-*_$archi.deb $PoolDir/$archi/webkit
-			else
-				$debug_mv Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins_*~"$distrib"_$archi.deb $PoolDir/$archi/cairo-dock-plug-ins
-				$debug_mv Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins-integration_*~"$distrib"_$archi.deb $PoolDir/$archi/cairo-dock-plug-ins
-			fi
+			$debug_mv Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins_*~"$distrib"_$archi.deb $PoolDir/$archi/cairo-dock-plug-ins
+			$debug_mv Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins-integration_*~"$distrib"_$archi.deb $PoolDir/$archi/cairo-dock-plug-ins
 		done
 	done
 }
@@ -203,16 +181,13 @@ else
 \t|-----|-----|-----|-all
 \t|-----|-----|-----|-----|-cairo-dock
 \t|-----|-----|-----|-----|-cairo-dock-plug-ins
-\t|-----|-----|-----|-----|-(webkit) => hardy
 \t|-----|-----|-----|-'architecture' (-> $Architecture)
 \t|-----|-----|-----|-----|-cairo-dock
 \t|-----|-----|-----|-----|-cairo-dock-plug-ins
-\t|-----|-----|-----|-----|-(webkit) => hardy
 Possibilité de les arranger automatiquement si on a :
 \t|-Incoming
 \t|-----|-cairo-dock
 \t|-----|-cairo-dock-plug-ins
-\t|-----|-webkit
 Depot pour Ubuntu :
 \tversions : $Ubuntu_Distrib
 \tarchitectures : $Architecture

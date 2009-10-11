@@ -20,7 +20,6 @@ echo -e "$BLEU""Disposition à avoir pour lancer le script:""$NORMAL""
 \t|-----|-Incoming
 \t|-----|-----|-cairo-dock
 \t|-----|-----|-cairo-dock-plug-ins
-\t|-----|-----|-webkit
 \n* ""$ROUGE""Les paquets deb doivent avoir été téléchargés ! ""$NORMAL""
 \n* ""$ROUGE""Les paquets plug-ins pour Ubuntu Hardy seront copiés automatiquement du dossier de Debian"
 echo -e "$VERT""Continuer ? [O/n]""$NORMAL"
@@ -30,7 +29,7 @@ if test "$continuer" = "n" -o  "$continuer" = "N"; then
 fi
 
 echo -e "$BLEU""\tCopie des fichiers pour Ubuntu Hardy\n""$NORMAL"
-cp debian/Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins*.deb ubuntu/Incoming/cairo-dock-plug-ins/
+cp debian/Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins*~hardy_*.deb ubuntu/Incoming/cairo-dock-plug-ins/
 
 echo -e "$BLEU""\tDépot Debian\n""$NORMAL"
 	cd debian/
