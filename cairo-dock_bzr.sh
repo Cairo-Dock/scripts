@@ -19,7 +19,8 @@
 
 
 #Changelog
-# 18/09/09 : 	matttbe : on enlève le lanceur devenu inutil.
+# 14/10/09 : 	matttbe : Ajout du support pour Linux Mint
+# 18/09/09 : 	matttbe : on enlève le lanceur devenu inutile.
 # 16/09/09 : 	nochka85 : Fix du message si on n'a jamais installé le dock par paquet
 #		matttbe : fix erreur au reload
 # 15/09/09 : 	matttbe : ajout du dépôt debian et hardy + désinstallation des paquets de CD si installation par bzr.
@@ -97,6 +98,9 @@ fi
 BZR_REV_FILE_CORE="$DIR/.bzr_core"
 BZR_REV_FILE_PLUG_INS="$DIR/.bzr_plug_ins"
 
+TRAP_ON='echo -e "\e]0;$BASH_COMMAND\007"' # Afficher la commande en cours dans le terminal
+TRAP_OFF="trap DEBUG"
+
 NORMAL="\\033[0;39m"
 BLEU="\\033[1;34m"
 VERT="\\033[1;32m" 
@@ -125,7 +129,7 @@ install_cairo_dock() {
 	else
 		echo -e "$VERT""\tRéalisé avec succès"
 	fi
-	
+
 	echo -e "$NORMAL"
 	echo "" >> $LOG_CAIRO_DOCK
 
@@ -133,7 +137,7 @@ install_cairo_dock() {
 
 install_cairo() {
 	cd $DIR/$CAIRO_DOCK_CORE_LP_BRANCH
-	
+
 	autoreconf -isvf && ./configure --prefix=/usr && make clean && make -j $(grep -c ^processor /proc/cpuinfo)
 
 	if [ $? -ne 0 ]; then
@@ -146,9 +150,9 @@ install_cairo() {
 
 
 install_cairo_dock_plugins() {
-	
+
 	echo -e "$BLEU""Installation des plug-ins"
-	
+
 	echo "Installation des plug-ins du `date`" >> $LOG_CAIRO_DOCK
 	echo "" >> $LOG_CAIRO_DOCK
 
@@ -163,7 +167,6 @@ install_cairo_dock_plugins() {
 
 	echo -e "$NORMAL"
 	echo "" >> $LOG_CAIRO_DOCK
-
 }
 
 
@@ -211,7 +214,7 @@ install(){
 	esac
 
 	echo $BZR_DL_MODE > $DIR/.bzr_dl
-	
+
 	echo -e "$BLEU""Téléchargement des données. Cette opération peut prendre quelques minutes"
 	echo -e "$NORMAL"
 	sleep 2
@@ -262,7 +265,6 @@ install(){
 
 
 reinstall(){
-
 	FULL_COMPILE=1
 
 	install_cairo_dock
@@ -281,7 +283,7 @@ reinstall(){
 
 uninstall() {
 	echo "Désinstallation de Cairo-Dock et des plug-ins"
-	
+
 	cd $DIR/$CAIRO_DOCK_CORE_LP_BRANCH
 	sudo make uninstall > $LOG_CAIRO_DOCK 2>&1
 	cd ..
@@ -289,16 +291,15 @@ uninstall() {
 	cd $DIR/$CAIRO_DOCK_PLUG_INS_LP_BRANCH
 	sudo make uninstall >> $LOG_CAIRO_DOCK 2>&1
 	cd ..
-	
+
 	if [ -e /usr/share/applications/cairo-dock_svn.desktop ]; then
 		sudo rm -f /usr/share/applications/cairo-dock_svn.desktop
 	fi
 	echo "La désinstallation à été effectuée."
 	echo ""
 	echo "Cependant, votre dossier de configuration est toujours présent."
-	echo "Celui-ci se trouve dans votre /home/.config et se nomme cairo-dock (attention c'est un dossier caché)."
+	echo "Celui-ci se trouve dans votre ~/.config et se nomme cairo-dock (attention c'est un dossier caché)."
 	echo "Vous pouvez le supprimer une fois la désinstallation effectuée"
-
 }
 
 
@@ -333,7 +334,7 @@ update(){
 	echo $NEW_CORE_VERSION > $BZR_REV_FILE_CORE
 	echo -e "\nCairo-Dock-Core : rev $ACTUAL_CORE_VERSION -> $NEW_CORE_VERSION \n"
 	echo -e "\nCairo-Dock-Core : rev $ACTUAL_CORE_VERSION -> $NEW_CORE_VERSION \n" >> $LOG_CAIRO_DOCK
-	
+
 	if [ $ACTUAL_CORE_VERSION -ne $NEW_CORE_VERSION ]; then
 		echo -e "$VERT""Une mise à jour de cairo-dock a été détéctée"
 		sleep 1
@@ -370,7 +371,7 @@ update(){
 	echo $NEW_PLUG_INS_VERSION > "$BZR_REV_FILE_PLUG_INS"
 	echo -e "\nCairo-Dock-Plug-Ins : rev $ACTUAL_PLUG_INS_VERSION -> $NEW_PLUG_INS_VERSION \n"
 	echo -e "\nCairo-Dock-Plug-Ins : rev $ACTUAL_PLUG_INS_VERSION -> $NEW_PLUG_INS_VERSION \n" >> $LOG_CAIRO_DOCK
-	
+
 	if [ $ACTUAL_PLUG_INS_VERSION -ne $NEW_PLUG_INS_VERSION ]; then
 		echo -e "$VERT""Une mise à jour des plug-ins a été détéctée"
 		install_cairo_dock_plugins
@@ -379,7 +380,7 @@ update(){
 		echo -e "$VERT""Recompilation des plug-ins suite à la mise à jour de cairo-dock"
 		install_cairo_dock_plugins
 	fi
-	  
+  
 	echo -e "$NORMAL"
     
  	if [ $UPDATE -eq 1 ]; then
@@ -390,7 +391,6 @@ update(){
 		zenity --info --title=Cairo-Dock --text="Cliquez sur Ok pour fermer le terminal."
 		exit
 	fi
-	
 }
 
 
@@ -402,7 +402,7 @@ update(){
 check() {
 	echo -e "$NORMAL""Vérification de l'intégrité de l'installation"
 	sleep 1
-	
+
 	if [ $2 = "CD" ]; then
 		if [ $ERROR -ne 0 ]; then
 			echo -e "$ROUGE"
@@ -478,6 +478,10 @@ detect_env_graph()
 	   ENV=3;
 	   PLUGINS_INTEGRATION=$PLUGINS_XFCE
 	   echo -e "$VERT""Votre environnement est XFCE 4 \n"
+	elif [[ `ps aux | grep -e "xfce"`  ]]; then
+	   ENV=3;
+	   PLUGINS_INTEGRATION=$PLUGINS_XFCE
+	   echo -e "$VERT""Votre environnement est XFCE \n"
 	else
 	   echo -e "Type de session locale non détéctée, ou non supportée vous utilisez e17, fluxbox ???... \n"
 	fi
@@ -489,38 +493,40 @@ detect_env_graph()
 detect_distrib() {
 	echo -e "$BLEU""Détection de la distribution"
 	DISTRIB=$(grep -e DISTRIB_CODENAME /etc/lsb-release | cut -d= -f2)
-	
+
 	if [ -n $DISTRIB ]; then
 		echo -e "$VERT""Votre distribution est $(grep -e DISTRIB_DESCRIPTION /etc/lsb-release | cut -d= -f2) ($DISTRIB)"
 		echo -e "$NORMAL"
 	elif [ $(grep -c ^Debian /etc/issue) -eq 1 ]; then
 		echo -e "$VERT""Votre distribution est Debian"
 		echo -e "$NORMAL"
+	elif [ $(grep -c ^"Linux Mint" /etc/issue) -eq 1 ]; then
+		echo -e "$VERT""Votre distribution est Linux Mint"
+		echo -e "$NORMAL"
 	else 
 		echo -e "$ROUGE""Impossible de déterminer la distribution\nATTENTION : Ce script est prévu pour Ubuntu et Debian\nWARNING : This script is provided for Ubuntu and Debian"
 		echo -e "$NORMAL"
-	fi	
+	fi
 }
 
 
 check_dependancies() {
-	
 	echo -e "$BLEU""Vérification des paquets nécéssaires à la compilation" 
-	
+
 	dpkg -s sudo |grep installed |grep "install ok" > /dev/null	
 		if [ $? -eq 1 ]; then #Debian
 			echo -e "$ROUGE"" Le paquet sudo n'est pas installé, veuillez l'installer avant de continuer \n 'sudo' package isn't installed. Please install it.""$NORMAL"""
 			exit
 		fi
-	
+
 	sudo -v # Pour que Nochka puisse aller regarder la tv en attendant la fin de la compilation ;-)
-	
+
 	sudo apt-get install -s cairo-dock | grep Inst > /dev/null	
 	if [ $? -eq 1 ]; then  #CD est installé par paquet
 		echo -e "$ROUGE"" Désinstallation du paquet 'Cairo-Dock' \n Uninstallation of 'Cairo-Dock' package.""$NORMAL"""
 		sudo apt-get purge -qq cairo-dock
 	fi
-	
+
 	for tested in $NEEDED
 	do
 		dpkg -s $tested |grep installed |grep "install ok" > /dev/null	
@@ -556,7 +562,7 @@ check_dependancies() {
 			sudo apt-get install -qq $NEEDED_B_KARMIC  >> $LOG_CAIRO_DOCK
 		fi
 	fi
-	
+
 	echo -e "$VERT""Vérification OK"
 	echo -e "$NORMAL"""
 	sleep 1
@@ -571,6 +577,10 @@ ppa_weekly() {
 	elif [ $(grep -c ^Ubuntu /etc/issue) -eq 1 ]; then
 		LSB_RELEASE=`lsb_release -sc`
 		PPA="deb http://ppa.launchpad.net/cairo-dock-team/weekly/ubuntu $LSB_RELEASE main ## Cairo-Dock-PPA-Weekly"
+		sudo -v
+		W_SUDO="sudo"
+	elif [ $(grep -c ^"Linux Mint" /etc/issue) -eq 1 ]; then
+		PPA="deb http://ppa.launchpad.net/cairo-dock-team/weekly-debian/ubuntu jaunty main ## Cairo-Dock-PPA-Weekly for Debian and the others forks"
 		sudo -v
 		W_SUDO="sudo"
 	else
@@ -664,14 +674,14 @@ if [ -d $DIR/$CAIRO_DOCK_CORE_LP_BRANCH ]; then
 			check_dependancies
 			update
 		;;
-	
+
 		"2")
 			detect_distrib
 			detect_env_graph
 			check_dependancies
 			reinstall
 		;;
-	
+
 		"3")
 			uninstall
 			zenity --info --title=Cairo-Dock --text="Cairo-Dock a été désinstallé, veuillez lire le message dans le terminal"
@@ -685,7 +695,6 @@ if [ -d $DIR/$CAIRO_DOCK_CORE_LP_BRANCH ]; then
 		"5")
 			about
 		;;
-	
 	esac
 else
 	echo -e "\t1 --> Installer la version BZR pour la première fois (Install)"
@@ -696,7 +705,7 @@ else
 	read answer_menu
 
 	case $answer_menu in
-	
+
 		"1")
 			detect_distrib
 			detect_env_graph
@@ -711,6 +720,5 @@ else
 		"3")
 			about
 		;;
-	
 	esac
 fi
