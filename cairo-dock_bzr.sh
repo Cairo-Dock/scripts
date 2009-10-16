@@ -433,7 +433,7 @@ testping () {
 		sleep 5
 		exit
 	else
-		echo "$NORMAL""\nConnexion Internet \t [ OK ]\n"
+		echo -e "$VERT""\nConnexion Internet \t [ OK ]\n""$NORMAL"
 	fi
 }
 
