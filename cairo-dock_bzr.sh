@@ -19,6 +19,7 @@
 
 
 #Changelog
+# 16/10/09 : 	matttbe : Contrôle de la connexion Internet
 # 14/10/09 : 	matttbe : Ajout du support pour Linux Mint
 # 18/09/09 : 	matttbe : on enlève le lanceur devenu inutile.
 # 16/09/09 : 	nochka85 : Fix du message si on n'a jamais installé le dock par paquet
@@ -62,6 +63,7 @@ SCRIPT="cairo-dock_bzr.sh"
 SCRIPT_SAVE="cairo-dock_bzr.sh.save"
 SCRIPT_NEW="cairo-dock_bzr.sh.new"
 HOST="http://svn.cairo-dock.org"
+DOMAIN="cairo-dock.org"
 
 CAIRO_DOCK_CORE_LP_BRANCH="cairo-dock-core"
 CAIRO_DOCK_PLUG_INS_LP_BRANCH="cairo-dock-plug-ins"
@@ -421,10 +423,26 @@ check() {
 	fi
 }
 
+testping () {
+	if [ "`ping -c1 $DOMAIN |grep received|cut -d, -f2`" != " 1 received" ]
+	then
+		echo -e "$ROUGE"
+		echo "Le test de connexion vers Internet à échouée"
+		echo "Réglez ce problème avant de poursuivre ce script"
+		echo "Internet Connexion Error"
+		sleep 5
+		exit
+	else
+		echo "$NORMAL""\nConnexion Internet \t [ OK ]\n"
+	fi
+}
 
 check_new_script() {
 	cp $SCRIPT $SCRIPT_SAVE #pour moi :)
-	echo -e "$NORMAL"""
+
+	echo -e "$NORMAL""Test de la connexion Internet (obligatoire)"
+	testping
+	
 	echo "Vérification de la disponibilité d'un nouveau script"
 	wget $HOST/$SCRIPT -q -O $SCRIPT_NEW
 	diff $SCRIPT $SCRIPT_NEW >/dev/null
