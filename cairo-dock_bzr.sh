@@ -430,6 +430,7 @@ testping () {
 		echo "Le test de connexion vers Internet à échouée"
 		echo "Réglez ce problème avant de poursuivre ce script"
 		echo "Internet Connexion Error"
+		echo -e "$NORMAL"
 		sleep 5
 		exit
 	else
