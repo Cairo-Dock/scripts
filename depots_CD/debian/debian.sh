@@ -74,15 +74,15 @@ paquets() {
 		PoolDir=$MainDir/pool
 		echo "\t$distrib"
 			# all
-		$debug_mv2 Incoming/cairo-dock/cairo-dock_*_all.deb $PoolDir/all/cairo-dock
-		$debug_mv2 Incoming/cairo-dock/cairo-dock-data_*_all.deb $PoolDir/all/cairo-dock
-		$debug_mv2 Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins-data_*_all.deb $PoolDir/all/cairo-dock-plug-ins
+		$debug_mv2 Incoming/cairo-dock/cairo-dock_*~debian_all.deb $PoolDir/all/cairo-dock
+		$debug_mv2 Incoming/cairo-dock/cairo-dock-data_*~debian_all.deb $PoolDir/all/cairo-dock
+		$debug_mv2 Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins-data_*~debian_all.deb $PoolDir/all/cairo-dock-plug-ins
 		for archi in $Architecture
 		do
-			$debug_mv2 Incoming/cairo-dock/cairo-dock-core_*_$archi.deb $PoolDir/$archi/cairo-dock
-			$debug_mv2 Incoming/cairo-dock/cairo-dock-dev_*_$archi.deb $PoolDir/$archi/cairo-dock
-			$debug_mv2 Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins_*_$archi.deb $PoolDir/$archi/cairo-dock-plug-ins
-			$debug_mv2 Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins-integration_*_$archi.deb $PoolDir/$archi/cairo-dock-plug-ins
+			$debug_mv2 Incoming/cairo-dock/cairo-dock-core_*~debian_$archi.deb $PoolDir/$archi/cairo-dock
+			$debug_mv2 Incoming/cairo-dock/cairo-dock-dev_*~debian_$archi.deb $PoolDir/$archi/cairo-dock
+			$debug_mv2 Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins_*~debian_$archi.deb $PoolDir/$archi/cairo-dock-plug-ins
+			$debug_mv2 Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins-integration_*~debian_$archi.deb $PoolDir/$archi/cairo-dock-plug-ins
 		done
 		debug_mv2="$debug_mv"
 	done

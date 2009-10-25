@@ -29,7 +29,7 @@ if test "$continuer" = "n" -o  "$continuer" = "N"; then
 fi
 
 echo -e "$BLEU""\tCopie des fichiers pour Ubuntu Hardy\n""$NORMAL"
-cp debian/Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins*~hardy_*.deb ubuntu/Incoming/cairo-dock-plug-ins/
+mv debian/Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins*~hardy_*.deb ubuntu/Incoming/cairo-dock-plug-ins/
 
 echo -e "$BLEU""\tDépot Debian\n""$NORMAL"
 	cd debian/

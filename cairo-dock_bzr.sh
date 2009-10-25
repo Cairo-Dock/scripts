@@ -19,6 +19,7 @@
 
 
 #Changelog
+# 25/10/09 : 	matttbe : ajout de RSSreader + scooby-do
 # 16/10/09 : 	matttbe : Contrôle de la connexion Internet
 # 14/10/09 : 	matttbe : Ajout du support pour Linux Mint
 # 18/09/09 : 	matttbe : on enlève le lanceur devenu inutile.
@@ -54,8 +55,6 @@
 # 12/02/08 : 	Ajout de la fonction de desinstallation de Glitz
 #				Modification de la fonction de vérification des erreurs lors de l'install
 
-# TODO : passphrases
-
 DEBUG=0 # Attention, ne pas oublier de modifier !!!
 DIR=$(pwd)
 LOG_CAIRO_DOCK=$DIR/log.txt
@@ -89,7 +88,7 @@ ERROR=0
 FULL_COMPILE=0
 DISTRIB=""
 INSTALL_CAIRO_DOCK_OK=1
-CONFIGURE="--enable-mail --enable-network-monitor"
+CONFIGURE="--enable-network-monitor --enable-scooby-do --enable-rssreader"
 
 if test -e "$DIR/.bzr_dl"; then
 	BZR_DL_MODE=`cat $DIR/.bzr_dl`
@@ -651,7 +650,7 @@ elif [ "$1" = "smo_update" ]; then
 elif [ "$1" = "-e" ]; then # possibilité d'ajouter des args
 	ARGS=$2
 	echo "$ARGS" > $DIR/.args
-	if [ $(grep -c ^enable $DIR/.args) -eg 1 ]; then # s'il y a au-moins un enable
+	if [ $(grep -c "enable" $DIR/.args) -eq 1 ]; then # s'il y a au-moins un enable
 		CONFIGURE="$CONFIGURE $ARGS"
 	else
 		for arg in $ARGS
