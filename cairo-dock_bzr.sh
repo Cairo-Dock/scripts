@@ -389,7 +389,12 @@ update(){
 	else
 		echo -e "$BLEU""Pas de mise à jour disponible"
 		echo -e "$NORMAL"
-		zenity --info --title=Cairo-Dock --text="Cliquez sur Ok pour fermer le terminal."
+		if [[ `ps aux | grep -e "[c]airo-dock"` ]]; then
+			dbus-send --session --dest=org.cairodock.CairoDock /org/cairodock/CairoDock org.cairodock.CairoDock.ShowDialog string:"Cairo-Dock: Pas de mise à jour
+Cairo-Dock: no Update" int32:8 string:terminal string:any string:none
+		else
+			zenity --info --title=Cairo-Dock --text="Cliquez sur Ok pour fermer le terminal."
+		fi
 		exit
 	fi
 }
@@ -411,12 +416,24 @@ check() {
 			egrep -i "( error| Erreur)" $1
 			echo "Veuillez consulter le fichier log.txt pour plus d'informations et vous rendre sur le forum de cairo-dock pour reporter l'erreur dans la section \"Version BZR\" "
 			echo -e "$NORMAL"
+			if [[ `ps aux | grep -e "[c]airo-dock"` ]]; then
+				dbus-send --session --dest=org.cairodock.CairoDock /org/cairodock/CairoDock org.cairodock.CairoDock.ShowDialog string:"Cairo-Dock: Erreur à la compilation
+Cairo-Dock: Compilation error
+	=> http://www.cairo-dock.org" int32:10 string:terminal string:any string:non
+			else
+				zenity --info --title=Cairo-Dock --text="Cliquez sur Ok pour fermer le terminal."
+			fi
 			exit
 		else
 			echo -e "$VERT"
 			echo "L'installation s'est terminée correctement."
 			echo -e "$NORMAL"
-			zenity --info --title=Cairo-Dock --text="Cliquez sur Ok pour fermer le terminal"
+			if [[ `ps aux | grep -e "[c]airo-dock"` ]]; then
+				dbus-send --session --dest=org.cairodock.CairoDock /org/cairodock/CairoDock org.cairodock.CairoDock.ShowDialog string:"Cairo-Dock: Mis à jour avec succès
+Cairo-Dock: Updated successfully" int32:8 string:terminal string:any string:non
+			else
+				zenity --info --title=Cairo-Dock --text="Cliquez sur Ok pour fermer le terminal."
+			fi
 			exit
 		fi
 	fi
