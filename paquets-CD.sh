@@ -7,8 +7,12 @@ DIR_VERIF=`echo $DIR | grep -c /Paquets/`
 UBUNTU_CORE="karmic jaunty intrepid hardy debian"
 UBUNTU_PLUG_INS="karmic jaunty intrepid hardy debian"
 CL="debian/changelog"
-ARG_CONFIGURE="--enable-mail --enable-network-monitor"
+ARG_CONFIGURE="--enable-network-monitor --enable-rssreader"
 DPUT_PSEUDO="matttbe"
+
+### CHANGELOG ###
+CHANGELOG='\\n  * New Upstream Version (sync from BZR).'
+CHANGELOG_PLUG_INS='\\n  * New Upstream Version (sync from BZR).'
 
 #	## Pour dput.cf :
 #	  * remplacer 'matttbe' ci-dessous et ci-dessus par votre pseudo
@@ -72,6 +76,7 @@ fi
 
 NUMBER_RELEASE=`cat ../../cairo-dock-core/configure.ac | head -n5 | grep INIT | cut -d[ -f3 | cut -d] -f1` # 2.1.0-rc3
 NUMBER_RELEASE_PG=`cat ../../cairo-dock-plug-ins/configure.ac | head -n5 | grep INIT | cut -d[ -f3 | cut -d] -f1` # 2.1.0-rc3
+PLUG_INS=`cat ../../cairo-dock-plug-ins/configure.ac | head -n5 | grep INIT | cut -d[ -f2 | cut -d] -f1` # cairo-dock-plugins
 
 echo -e "$VERT"
 
@@ -86,66 +91,77 @@ read -p "Limite de l'upload (en ko) : " TRICKLE
 if [ "$TRICKLE" = "" ]; then
 	TRICKLE=0
 fi
-read -p "Le dossier courant va être vider de son contenu, pressez Enter pour continuer" POUET
-rm -r *
+
+if test "$ARG1" = "-t"; then
+	echo -e "$ROUGE""NOT Generating tarballs ...""$NORMAL"
+	mv *.tar.gz ../
+fi
+
+if test ! "$ARG1" = "-u"; then
+	read -p "Le dossier courant va être vider de son contenu, pressez Enter pour continuer" POUET
+	rm -r *
+fi
 echo -e "$NORMAL"
 
 date > $DIR/log.txt
 
 ###### TARBALL ######
-
-echo "***************************"
-echo -e "* ""$VERT""Generating tarballs ...""$NORMAL"" *"
-echo "***************************"
-
-echo -e "$VERT""\n\tCore""$NORMAL"
-echo -e "\n\t==== Tarball : Core ====\n" >> $DIR/log.txt
-cd ../../cairo-dock-core/
-trap "$TRAP_ON" DEBUG
-if [ "$ARG1" = "-f" ]; then
-	echo -e "$ROUGE""no autoreconf + configure""$NORMAL"
+if test "$ARG1" = "-t"; then
+	mv ../*.tar.gz .
+	tar xzf *.tar.gz
+elif test "$ARG1" = "-u"; then
+	echo -e "$ROUGE""Uniquement l'upload""$NORMAL"
 else
-	autoreconf -isvf >> $DIR/log.txt
-	./configure --prefix=/usr >> $DIR/log.txt
-fi
-make dist >> $DIR/log.txt
-$TRAP_OFF
-TARBALL_CORE="cairo-dock-$NUMBER_RELEASE.tar.gz"
-TARBALL_ORIG_CORE="cairo-dock-$NUMBER_RELEASE.orig.tar.gz"
-mv $TARBALL_CORE $DIR/$TARBALL_ORIG_CORE
-cd $DIR
-tar xzf $TARBALL_ORIG_CORE
 
-echo -e "$VERT""\tPlug-ins""$NORMAL"
-echo -e "\n\t==== Tarball : Plug-ins ====\n" >> $DIR/log.txt
-cd ../../cairo-dock-plug-ins/
-PLUG_INS=`cat configure.ac | head -n5 | grep INIT | cut -d[ -f2 | cut -d] -f1`
-if [ $NUMBER_RELEASE != $NUMBER_RELEASE_PG ]; then
-	echo -e "$ROUGE""ATTENTION, la version est différente de core""$NORMAL"
-fi
-trap "$TRAP_ON" DEBUG
-if [ "$ARG1" = "-f" ]; then
-	echo -e "$ROUGE""no autoreconf + configure""$NORMAL"
-elif [ "$ARG1" = "-e" ]; then
-	echo -e "$ROUGE""./configure $ARG_CONFIGURE""$NORMAL"
-	autoreconf -isvf >> $DIR/log.txt
-	./configure --prefix=/usr $ARG_CONFIGURE >> $DIR/log.txt
-else
-	autoreconf -isvf >> $DIR/log.txt
-	./configure --prefix=/usr >> $DIR/log.txt
-fi
-make dist >> $DIR/log.txt
-$TRAP_OFF
-TARBALL_PG="$PLUG_INS-$NUMBER_RELEASE_PG.tar.gz"
-TARBALL_ORIG_PG="$PLUG_INS-$NUMBER_RELEASE_PG.orig.tar.gz"
-mv $TARBALL_PG $DIR/$TARBALL_ORIG_PG
-cd $DIR
-tar xzf $TARBALL_ORIG_PG
+	echo "***************************"
+	echo -e "* ""$VERT""Generating tarballs ...""$NORMAL"" *"
+	echo "***************************"
 
+	echo -e "$VERT""\n\tCore""$NORMAL"
+	echo -e "\n\t==== Tarball : Core ====\n" >> $DIR/log.txt
+	cd ../../cairo-dock-core/
+	trap "$TRAP_ON" DEBUG
+	if [ "$ARG1" = "-f" ]; then
+		echo -e "$ROUGE""no autoreconf + configure""$NORMAL"
+	else
+		autoreconf -isvf >> $DIR/log.txt
+		./configure --prefix=/usr >> $DIR/log.txt
+	fi
+	make dist >> $DIR/log.txt
+	$TRAP_OFF
+	TARBALL_CORE="cairo-dock-$NUMBER_RELEASE.tar.gz"
+	TARBALL_ORIG_CORE="cairo-dock-$NUMBER_RELEASE.orig.tar.gz"
+	mv $TARBALL_CORE $DIR/$TARBALL_ORIG_CORE
+	cd $DIR
+	tar xzf $TARBALL_ORIG_CORE
 
-### CHANGELOG ###
-CHANGELOG='\\n  * New Upstream Version (sync from BZR).'
-CHANGELOG_PLUG_INS='\\n  * New Upstream Version (sync from BZR).\n  * debian/rules\n   - Added mail and network-manager\n  * debian/control\n   - Added libetpan-dev as depends for cairo-dock-plug-ins'
+	echo -e "$VERT""\tPlug-ins""$NORMAL"
+	echo -e "\n\t==== Tarball : Plug-ins ====\n" >> $DIR/log.txt
+	cd ../../cairo-dock-plug-ins/
+	if [ $NUMBER_RELEASE != $NUMBER_RELEASE_PG ]; then
+		echo -e "$ROUGE""ATTENTION, la version est différente de core""$NORMAL"
+	fi
+	trap "$TRAP_ON" DEBUG
+	if [ "$ARG1" = "-f" ]; then
+		echo -e "$ROUGE""no autoreconf + configure""$NORMAL"
+	elif [ "$ARG1" = "-e" ]; then
+		echo -e "$ROUGE""./configure $ARG_CONFIGURE""$NORMAL"
+		autoreconf -isvf >> $DIR/log.txt
+		./configure --prefix=/usr $ARG_CONFIGURE >> $DIR/log.txt
+	else
+		autoreconf -isvf >> $DIR/log.txt
+		./configure --prefix=/usr >> $DIR/log.txt
+	fi
+	make dist >> $DIR/log.txt
+	$TRAP_OFF
+	TARBALL_PG="$PLUG_INS-$NUMBER_RELEASE_PG.tar.gz"
+	TARBALL_ORIG_PG="$PLUG_INS-$NUMBER_RELEASE_PG.orig.tar.gz"
+	mv $TARBALL_PG $DIR/$TARBALL_ORIG_PG
+	cd $DIR
+	tar xzf $TARBALL_ORIG_PG
+fi
+
+### PACKAGE NAME
 
 if [ "$VERSION" = "" ]; then
 	VERSION="$NUMBER_RELEASE-$date_AJD-0ubuntu1~ppa0"
