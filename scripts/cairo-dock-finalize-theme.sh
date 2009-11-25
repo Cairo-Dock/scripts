@@ -1,7 +1,7 @@
 #!/bin/sh
 
 if test "x$1" = "x"; then
-	t="~/.config/cairo-dock/current_theme/icons"
+	t="$HOME/.config/cairo-dock/current_theme/icons"
 else
 	t="$1"
 fi
@@ -21,6 +21,8 @@ do
 	fi
 	if test -e firefox.$suff; then
 		ln -s firefox.$suff firefox-3.0.$suff
+		ln -s firefox.$suff firefox-3.5.$suff
+		ln -s firefox.$suff firefox-4.0.$suff
 	fi
 	if test -e file-browser.$suff; then
 		echo "    towards file-browser.$suff"

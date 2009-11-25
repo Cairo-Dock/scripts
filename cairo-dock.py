@@ -1,4 +1,4 @@
-'''apport package hook for compiz
+'''apport package hook for cairo-dock
 
 (c) 2009 Author: Matthieu Baerts <matttbe@gmail.com>
 '''
@@ -25,18 +25,13 @@ def add_info(report):
     report['PciDisplay'] = pci_devices(PCI_DISPLAY).split('\n')[0]
 
     # GLX
-    report['glxinfo'] = command_output(['glxinfo', '|grep', 'OpenGL'])
+    report['glxinfo'] = command_output(['glxinfo'])
 
     # Compositing
     report['CompositingMetacity'] = command_output(['gconftool-2', '--get', '/apps/metacity/general/compositing_manager'])
 
     # WM
     report['WM'] = command_output(['gconftool-2', '--get', '/desktop/gnome/applications/window_manager/current'])
-
-    # Desktop environment
-    report['Gnome'] = command_output(['ps', 'aux', '|grep', '-e', 'gnome-settings-daemon'])
-    report['XFCE'] = command_output(['ps', 'aux', '|grep', '-e', 'xfce'])
-    report['KDE'] = command_output(['ps', 'aux', '|grep', '-e', 'ksmserver'])
 
 
 ## DEBUGING ##

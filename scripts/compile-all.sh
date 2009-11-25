@@ -7,15 +7,16 @@ export CAIRO_DOCK_CLEAN="0"
 export CAIRO_DOCK_COMPIL="0"
 export CAIRO_DOCK_UNSTABLE="0"
 export CAIRO_DOCK_INSTALL="0"
+export CAIRO_DOCK_THEMES="0"
 export CAIRO_DOCK_DOC="0"
-export CAIRO_DOCK_EXCLUDE="template stacks"
+export CAIRO_DOCK_EXCLUDE="template musicplayer stacks gauge-test"
 export CAIRO_DOCK_GLITZ_OPTION=""
 export CAIRO_DOCK_PLUG_INS_OPTION=""
 export SUDO=sudo
 export TIME=time
 
 echo "this script will process : "
-while getopts "acCituhd:Dgm" flag
+while getopts "acCituhd:Dg" flag
 do
 	echo " option $flag $OPTIND $OPTARG"
 	case "$flag" in
@@ -165,14 +166,12 @@ fi
 cd $CAIRO_DOCK_DIR/plug-ins
 export liste_stable="`sed "/^#/d" Applets.stable`"
 export liste_all="`find . -maxdepth 1  -type d | cut -d "/" -f 2 | /bin/grep -v '\.'`"
-if test "$CAIRO_DOCK_UNSTABLE" = "1"; then
-	export liste_plugins="`echo $liste_all`"
-else
-	export liste_plugins="`echo $liste_stable`"
-fi
 echo "the following applets will be compiled :"
-echo "$liste_plugins"
-
+if test "$CAIRO_DOCK_UNSTABLE" = "1"; then
+	echo "$liste_all"
+else
+	echo "$liste_stable"
+fi
 echo "*************************************"
 echo "* Compilation of stable modules ... *"
 echo "*************************************"
@@ -180,7 +179,7 @@ echo "*************************************"
 ### on extrait les messages des plug-ins a traduire.
 if test "$CAIRO_DOCK_AUTORECONF" = "1"; then
 	echo "extracting sentences to translate..."
-	for plugin in $liste_plugins
+	for plugin in $liste_all
 	do
 		if test -d $plugin; then
 			cd $plugin
@@ -191,11 +190,13 @@ if test "$CAIRO_DOCK_AUTORECONF" = "1"; then
 						rm -f data/messages
 						for c in data/*.conf
 						do
-							$CAIRO_DOCK_EXTRACT_MESSAGE "$c"
+							$CAIRO_DOCK_EXTRACT_MESSAGE $c
 						done;
 					fi
 					cd po
-					$CAIRO_DOCK_GEN_TRANSLATION # defient obsolete.
+					if test -e *.pot; then
+						$CAIRO_DOCK_GEN_TRANSLATION
+					fi
 					cd ..
 				fi
 			fi
@@ -203,11 +204,6 @@ if test "$CAIRO_DOCK_AUTORECONF" = "1"; then
 		fi
 	done;
 fi
-
-cd po
-$CAIRO_DOCK_GEN_TRANSLATION all
-cd ..
-
 
 ### On compile les plug-ins stables en une passe.
 export compil_ok="1"
@@ -288,7 +284,9 @@ if test "$CAIRO_DOCK_UNSTABLE" = "1" -o "$compil_ok" = "0"; then
 							done;
 						fi
 						cd po
-						$CAIRO_DOCK_GEN_TRANSLATION
+						if test -e *.pot; then
+							$CAIRO_DOCK_GEN_TRANSLATION
+						fi
 						cd ..
 					fi
 					echo  "* configuring ..."

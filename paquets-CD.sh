@@ -7,7 +7,7 @@ DIR_VERIF=`echo $DIR | grep -c /Paquets/`
 UBUNTU_CORE="karmic jaunty intrepid hardy debian"
 UBUNTU_PLUG_INS="karmic jaunty intrepid hardy debian"
 CL="debian/changelog"
-ARG_CONFIGURE="--enable-network-monitor --enable-rssreader"
+ARG_CONFIGURE="--enable-network-monitor --enable-rssreader --enable-scooby-do"
 DPUT_PSEUDO="matttbe"
 
 ### CHANGELOG ###

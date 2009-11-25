@@ -389,7 +389,7 @@ update(){
 	echo -e "\nCairo-Dock-Core : rev $ACTUAL_CORE_VERSION -> $NEW_CORE_VERSION \n" >> $LOG_CAIRO_DOCK
 
 	if [ $ACTUAL_CORE_VERSION -ne $NEW_CORE_VERSION ]; then
-		echo -e "$VERT""Une mise à jour de cairo-dock a été détéctée"
+		echo -e "$VERT""Une mise à jour de cairo-dock a été détectée"
 		sleep 1
 		install_cairo_dock
 		UPDATE_CAIRO_DOCK=1
@@ -427,7 +427,7 @@ update(){
 	echo -e "\nCairo-Dock-Plug-Ins : rev $ACTUAL_PLUG_INS_VERSION -> $NEW_PLUG_INS_VERSION \n" >> $LOG_CAIRO_DOCK
 
 	if [ $ACTUAL_PLUG_INS_VERSION -ne $NEW_PLUG_INS_VERSION ]; then
-		echo -e "$VERT""Une mise à jour des Plug-ins a été détéctée"
+		echo -e "$VERT""Une mise à jour des Plug-ins a été détectée"
 		install_cairo_dock_plugins
 		UPDATE=1
 	elif [ $UPDATE_CAIRO_DOCK -eq 1 ]; then
@@ -481,7 +481,7 @@ update(){
 	echo -e "\nCairo-Dock-Plug-Ins-Extras : rev $ACTUAL_PLUG_INS_EXTRAS_VERSION -> $NEW_PLUG_INS_EXTRAS_VERSION \n" >> $LOG_CAIRO_DOCK
 
 	if [ $ACTUAL_PLUG_INS_EXTRAS_VERSION -ne $NEW_PLUG_INS_EXTRAS_VERSION ]; then
-		echo -e "$VERT""Une mise à jour des Plug-ins Extras a été détéctée"
+		echo -e "$VERT""Une mise à jour des Plug-ins Extras a été détectée"
 		install_cairo_dock_plugins_extras
 		UPDATE=1
 	fi
@@ -650,7 +650,7 @@ detect_distrib() {
 
 
 check_dependancies() {
-	echo -e "$BLEU""Vérification des paquets nécéssaires à la compilation" 
+	echo -e "$BLEU""Vérification des paquets nécessaires à la compilation" 
 
 	dpkg -s sudo |grep installed |grep "install ok" > /dev/null	
 		if [ $? -eq 1 ]; then #Debian
