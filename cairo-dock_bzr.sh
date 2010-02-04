@@ -19,6 +19,7 @@
 
 
 #Changelog
+# 22/01/10 : 	matttbe : changement pour DBus applets + traduction
 # 08/11/09 : 	matttbe : Prise en charge de Lucid + applets third-party
 # 25/10/09 : 	matttbe : ajout de RSSreader + scooby-do + envoie des info via ShowDialog
 # 16/10/09 : 	matttbe : Contrôle de la connexion Internet
@@ -79,7 +80,7 @@ PLUGINS_GNOME="gnome-integration"
 PLUGINS_GNOME_OLD="gnome-integration-old"
 PLUGINS_XFCE="xfce-integration"
 
-NEEDED="bzr libtool build-essential automake1.9 autoconf m4 autotools-dev pkg-config zenity intltool gettext libcairo2-dev libgtk2.0-dev librsvg2-dev libdbus-glib-1-dev libgnomeui-dev libvte-dev libxxf86vm-dev libx11-dev libalsa-ocaml-dev libasound2-dev libxtst-dev libgnome-menu-dev libgtkglext1-dev freeglut3-dev glutg3-dev libetpan-dev libwebkit-dev libexif-dev curl xdotool"
+NEEDED="bzr libtool build-essential automake1.9 autoconf m4 autotools-dev pkg-config zenity intltool gettext libcairo2-dev libgtk2.0-dev librsvg2-dev libdbus-glib-1-dev libgnomeui-dev libvte-dev libxxf86vm-dev libx11-dev libalsa-ocaml-dev libasound2-dev libxtst-dev libgnome-menu-dev libgtkglext1-dev freeglut3-dev glutg3-dev libetpan-dev libwebkit-dev libexif-dev curl "
 NEEDED_XFCE="libthunar-vfs-1-dev"
 NEEDED_GNOME="libgnomevfs2-dev"
 NEEDED_KARMIC="libxklavier-dev"
@@ -121,19 +122,19 @@ install_cairo_dock() {
 
 	rm -Rf $LOG_CAIRO_DOCK > /dev/null
 
-	echo "Installation de cairo-dock du `date`" >> $LOG_CAIRO_DOCK
+	echo "Installation de Cairo-Dock du `date`" >> $LOG_CAIRO_DOCK
 
 	echo "" >> $LOG_CAIRO_DOCK
-	echo -e "$BLEU""Installation de cairo-dock"
+	echo -e "$BLEU""Installation : Cairo-Dock Core"
 
 	install_cairo >> $LOG_CAIRO_DOCK 2>&1
 
 	if [ $? -ne 0 ]; then
 		ERROR+=1
-		echo -e "$ROUGE""\tErreur"
+		echo -e "$ROUGE""\tError"
 		check $LOG_CAIRO_DOCK "CD"
 	else
-		echo -e "$VERT""\tRéalisé avec succès"
+		echo -e "$VERT""\tSuccessfully Installed !"
 	fi
 
 	echo -e "$NORMAL"
@@ -157,7 +158,7 @@ install_cairo() {
 
 install_cairo_dock_plugins() {
 
-	echo -e "$BLEU""Installation des plug-ins"
+	echo -e "$BLEU""Installation : Plug-Ins"
 
 	echo "Installation des plug-ins du `date`" >> $LOG_CAIRO_DOCK
 	echo "" >> $LOG_CAIRO_DOCK
@@ -166,9 +167,9 @@ install_cairo_dock_plugins() {
 
 	if [ $? -ne 0 ]; then
 		ERROR+=1
-		echo -e "$ROUGE""\tErreur"
+		echo -e "$ROUGE""\tError"
 	else
-		echo -e "$VERT""\tRéalisé avec succès"
+		echo -e "$VERT""\tSuccessfully Installed !"
 	fi
 
 	echo -e "$NORMAL"
@@ -194,23 +195,25 @@ install_plugins() {
 
 
 install_cairo_dock_plugins_extras() {
-	echo -e "$BLEU""Installation des Plug-ins Extras"
+	echo -e "$BLEU""Installation : Plug-ins Extras"
 
 	echo "Installation des Plug-ins Extras du `date`" >> $LOG_CAIRO_DOCK
 	echo "" >> $LOG_CAIRO_DOCK
+	
+	mkdir -p $CAIRO_DOCK_PLUG_INS_EXTRAS_HOME # ça ne coute rien -> dossiers parents
 
-	sudo rm -rf $CAIRO_DOCK_PLUG_INS_EXTRAS_USR/
-	sudo cp -R $DIR/$CAIRO_DOCK_PLUG_INS_EXTRAS_LP_BRANCH $CAIRO_DOCK_PLUG_INS_EXTRAS_USR/ >> $LOG_CAIRO_DOCK 2>&1
-	sudo rm -rf $CAIRO_DOCK_PLUG_INS_EXTRAS_USR/.bzr $CAIRO_DOCK_PLUG_INS_EXTRAS_USR/demos $CAIRO_DOCK_PLUG_INS_EXTRAS_USR/Calendar
-	mkdir -p $CAIRO_DOCK_PLUG_INS_EXTRAS_HOME # ça ne coute rien :)
-	sudo rm -rf $CAIRO_DOCK_PLUG_INS_EXTRAS_HOME/Calendar
-	cp -R $DIR/$CAIRO_DOCK_PLUG_INS_EXTRAS_LP_BRANCH/Calendar $CAIRO_DOCK_PLUG_INS_EXTRAS_HOME/Calendar
+	for i in `ls $DIR/$CAIRO_DOCK_PLUG_INS_EXTRAS_LP_BRANCH`;do
+		rm -rf $CAIRO_DOCK_PLUG_INS_EXTRAS_HOME/$i # on vire ceux que l'on va remplacer
+	done
+
+	cp -R $DIR/$CAIRO_DOCK_PLUG_INS_EXTRAS_LP_BRANCH/* $CAIRO_DOCK_PLUG_INS_EXTRAS_HOME/ >> $LOG_CAIRO_DOCK 2>&1
+	rm -rf $CAIRO_DOCK_PLUG_INS_EXTRAS_HOME/.bzr $CAIRO_DOCK_PLUG_INS_EXTRAS_HOME/demos
 
 	if [ $? -ne 0 ]; then
 		ERROR+=1
-		echo -e "$ROUGE""\tErreur"
+		echo -e "$ROUGE""\tError"
 	else
-		echo -e "$VERT""\tRéalisé avec succès"
+		echo -e "$VERT""\tSuccessfully Installed !"
 	fi
 
 	echo -e "$NORMAL"
@@ -220,41 +223,76 @@ install_cairo_dock_plugins_extras() {
 
 
 install(){
+	if [ $LG -eq 0 ]; then
+		echo -e "$BLEU""C'est la première fois que vous installez la version BZR de Cairo-Dock"
+		echo -e "\nGrâce à l'outil bzr, vous pouvez désormais télécharger les sources de plusieurs façons, notamment télécharger tout le contenu de la branche (si vous souhaitez ultérieurement procéder à des modifications et les publier sur des branches différents) ou uniquement la dernière révision (si vous voulez simplement tester les dernières révisions)\n""$VERT"
 
-	echo -e "$BLEU""C'est la première fois que vous installez la version BZR de Cairo-Dock"
-	echo -e "\nGrâce à l'outil bzr, vous pouvez désormais télécharger les sources de plusieurs façons, notamment télécharger tout le contenu de la branche (si vous souhaitez ultérieurement procéder à des modifications et les publier sur des branches différents) ou uniquement la dernière révision (si vous voulez simplement tester les dernières révisions)\n""$VERT"
+		BZR_DL_READ='0' # il nous faut une boucle pour prendre plus de cas
+		while [ $BZR_DL_READ != '1' ] && [ $BZR_DL_READ != '2' ]; do
+			echo -e "\t1 --> Télécharger la branche complète (~150Mo - pour les développeurs)"
+			echo -e "\t2 --> Télécharger la dernière version (~20Mo - pour tous utilisateurs)"
+			read BZR_DL_READ 
+		done
 
-	BZR_DL_READ='0' # il nous faut une boucle pour prendre plus de cas
-	while [ $BZR_DL_READ != '1' ] && [ $BZR_DL_READ != '2' ]; do
-		echo -e "\t1 --> Télécharger la branche complète (~150Mo - pour les développeurs)\n\t\tDownload the complete branch (~150Mo - for dev.)"
-		echo -e "\t2 --> Télécharger la dernière version (~20Mo - pour tous utilisateurs)\n\t\tDownload only the last rev. (~20Mo - for all users)"
-		read BZR_DL_READ 
-	done
+		case $BZR_DL_READ in
+			"1")
+				echo -e "Mode choisi : branch\n"
+				BZR_DL="branch"
+				BZR_DL_MODE=1
+			;;
+			"" | "2")
+				echo -e "Mode choisi : checkout --lightweight\n"
+				BZR_DL="checkout --lightweight -q"
+				BZR_DL_MODE=0
+			;;
+		esac
 
-	case $BZR_DL_READ in
-		"1")
-			echo -e "Mode choisi : branch\n"
-			BZR_DL="branch"
-			BZR_DL_MODE=1
-		;;
-		"" | "2")
-			echo -e "Mode choisi : checkout --lightweight\n"
-			BZR_DL="checkout --lightweight -q"
-			BZR_DL_MODE=0
-		;;
-	esac
+		echo $BZR_DL_MODE > $DIR/.bzr_dl
 
-	echo $BZR_DL_MODE > $DIR/.bzr_dl
+		echo -e "$BLEU""Téléchargement des données. Cette opération peut prendre quelques minutes"
+		LG_DL_BG="Téléchargement de"
+		LG_DL_END="Données téléchargées. L'installation va débuter\nCette opération peut prendre plusieurs minutes et ralentir votre système"
+		LG_DL_ERROR="Impossible de se connecter au serveur de Launchpad, veuillez vérifier votre connexion internet ou retenter plus tard"
+	else
+		echo -e "$BLEU""Is it the first time that you install Cairo-Dock from BZR sources files?"
+		echo -e "\nWith BZR you can download these sources files in two ways:\n\t* By downloading all the content (it's interesting to have a copy of the server branch if you want to make some modifications in this branch) or only the latest revision (if you just want to compile sources)\n""$VERT"
 
-	echo -e "$BLEU""Téléchargement des données. Cette opération peut prendre quelques minutes"
+		BZR_DL_READ='0'
+		while [ $BZR_DL_READ != '1' ] && [ $BZR_DL_READ != '2' ]; do
+			echo -e "\t1 --> Download the complete branch (~150Mo - for dev.)"
+			echo -e "\t2 --> Download only the last rev. (~20Mo - for all users)"
+			read BZR_DL_READ 
+		done
+
+		case $BZR_DL_READ in
+			"1")
+				echo -e "Your choice: 'branch'\n"
+				BZR_DL="branch"
+				BZR_DL_MODE=1
+			;;
+			"" | "2")
+				echo -e "Your choice: 'checkout --lightweight'\n"
+				BZR_DL="checkout --lightweight -q"
+				BZR_DL_MODE=0
+			;;
+		esac
+
+		echo $BZR_DL_MODE > $DIR/.bzr_dl
+
+		echo -e "$BLEU""The download will begin. Please wait ;)"
+		LG_DL_BG="Download of"
+		LG_DL_END="Sources files downloaded. The installation will begin\nThis compilation can take some time and slow down your system"
+		LG_DL_ERROR="It seems that there is some problems. Please check your Internet connexion or retry later!"
+	fi
+
 	echo -e "$NORMAL"
 	sleep 2
 
 	if [ ! -d $DIR/$CAIRO_DOCK_CORE_LP_BRANCH ]; then
-		echo -e "$BLEU""Téléchargement de cairo-dock"
+		echo -e "$BLEU""$LG_DL_BG Cairo-Dock Core"
 		bzr $BZR_DL lp:$CAIRO_DOCK_CORE_LP_BRANCH 
 		if [ $? -ne 0 ]; then
-			echo -e "$ROUGE""Impossible de se connecter au serveur de Launchpad, veuillez vérifier votre connexion internet ou retenter plus tard"
+			echo -e "$ROUGE""$LG_DL_ERROR"
 			exit
 		else
 			NEW_CORE_VERSION=`bzr revno -q $CAIRO_DOCK_CORE_LP_BRANCH`
@@ -267,10 +305,10 @@ install(){
 	echo -e "$NORMAL" ## PLUG-INS ##
 
 	if [ ! -d $DIR/$CAIRO_DOCK_PLUG_INS_LP_BRANCH ]; then
-		echo -e "$BLEU""Téléchargement des plugins"
+		echo -e "$BLEU""$LG_DL_BG Plug-Ins"
 		bzr $BZR_DL lp:$CAIRO_DOCK_PLUG_INS_LP_BRANCH 
 		if [ $? -ne 0 ]; then
-			echo -e "$ROUGE""Impossible de se connecter au serveur de Launchpad, veuillez vérifier votre connexion internet ou retenter plus tard"
+			echo -e "$ROUGE""$LG_DL_ERROR"
 			exit
 		else
 			NEW_PLUG_INS_VERSION=`bzr revno -q $CAIRO_DOCK_PLUG_INS_LP_BRANCH`
@@ -283,10 +321,10 @@ install(){
 	echo -e "$NORMAL" ## PLUG-INS EXTRAS ##
 
 	if [ ! -d $DIR/$CAIRO_DOCK_PLUG_INS_EXTRAS_LP_BRANCH ]; then
-		echo -e "$BLEU""Téléchargement des plugins extras"
+		echo -e "$BLEU""$LG_DL_BG Plug-Ins Extras"
 		bzr $BZR_DL lp:$CAIRO_DOCK_PLUG_INS_EXTRAS_LP_BRANCH
 		if [ $? -ne 0 ]; then
-			echo -e "$ROUGE""Impossible de se connecter au serveur de Launchpad, veuillez vérifier votre connexion internet ou retenter plus tard"
+			echo -e "$ROUGE""$LG_DL_ERROR"
 			exit
 		else
 			NEW_PLUG_INS_EXTRAS_VERSION=`bzr revno -q $CAIRO_DOCK_PLUG_INS_EXTRAS_LP_BRANCH`
@@ -297,8 +335,7 @@ install(){
 	fi
 
 	echo -e "$NORMAL"
-	echo -e "$BLEU""Données téléchargées. L'installation va débuter"
-	echo "Cette opération peut prendre plusieurs minutes et ralentir votre système"
+	echo -e "$BLEU""$LG_DL_END"
 	echo -e "$NORMAL"
 
 	sleep 5
@@ -348,7 +385,7 @@ uninstall() {
 	if [ -e /usr/share/applications/cairo-dock_svn.desktop ]; then
 		sudo rm -f /usr/share/applications/cairo-dock_svn.desktop
 	fi
-	echo "La désinstallation à été effectuée."
+	echo "La désinstallation à été effectuée / Uninstallation finished"
 	echo ""
 	echo "Cependant, votre dossier de configuration est toujours présent."
 	echo "Celui-ci se trouve dans votre ~/.config et se nomme cairo-dock (attention c'est un dossier caché)."
@@ -362,7 +399,15 @@ uninstall() {
 #######################################################################
 
 update(){
-	echo -e "$BLEU""Recherche des mises à jour pour Cairo-Dock"
+	if [ $LG -eq 0 ]; then
+		LG_SEARCH_FOR="Recherche des mises à jour pour"
+		LG_UP_FOUND="Une mise à jour a été détectée pour"
+	else
+		LG_SEARCH_FOR="Check if there is an update for"
+		LG_UP_FOUND="An update has been detected for"
+	fi
+
+	echo -e "$BLEU""$LG_SEARCH_FOR Cairo-Dock"
 	if test -e "$BZR_REV_FILE_CORE"; then
 		ACTUAL_CORE_VERSION=`cat "$BZR_REV_FILE_CORE"`
 	else
@@ -375,6 +420,7 @@ update(){
 		BZR_UP="pull"
 		bzr $BZR_UP lp:$CAIRO_DOCK_CORE_LP_BRANCH
 		NEW_CORE_VERSION=`bzr revno -q`
+		bzr log -l1 --line
 		cd $DIR/
 	else
 		BZR_UP="update -q"
@@ -389,7 +435,7 @@ update(){
 	echo -e "\nCairo-Dock-Core : rev $ACTUAL_CORE_VERSION -> $NEW_CORE_VERSION \n" >> $LOG_CAIRO_DOCK
 
 	if [ $ACTUAL_CORE_VERSION -ne $NEW_CORE_VERSION ]; then
-		echo -e "$VERT""Une mise à jour de cairo-dock a été détectée"
+		echo -e "$VERT""$LG_UP_FOUND Cairo-Dock"
 		sleep 1
 		install_cairo_dock
 		UPDATE_CAIRO_DOCK=1
@@ -402,7 +448,7 @@ update(){
 
 	## PLUG-INS ##
 
-	echo -e "$BLEU""Recherche des mises à jour pour les Plug-ins"
+	echo -e "$BLEU""$LG_SEARCH_FOR Plug-ins"
 	if test -e "$BZR_REV_FILE_PLUG_INS"; then
 		ACTUAL_PLUG_INS_VERSION=`cat "$BZR_REV_FILE_PLUG_INS"`
 	else
@@ -414,6 +460,7 @@ update(){
 		cd $DIR/$CAIRO_DOCK_PLUG_INS_LP_BRANCH
 		bzr $BZR_UP lp:$CAIRO_DOCK_PLUG_INS_LP_BRANCH
 		NEW_PLUG_INS_VERSION=`bzr revno -q`
+		bzr log -l1 --line
 		cd $DIR/
 	else
 		NEW_PLUG_INS_VERSION=`bzr revno -q $CAIRO_DOCK_PLUG_INS_LP_BRANCH`
@@ -427,18 +474,22 @@ update(){
 	echo -e "\nCairo-Dock-Plug-Ins : rev $ACTUAL_PLUG_INS_VERSION -> $NEW_PLUG_INS_VERSION \n" >> $LOG_CAIRO_DOCK
 
 	if [ $ACTUAL_PLUG_INS_VERSION -ne $NEW_PLUG_INS_VERSION ]; then
-		echo -e "$VERT""Une mise à jour des Plug-ins a été détectée"
+		echo -e "$VERT""$LG_UP_FOUND Plug-Ins"
 		install_cairo_dock_plugins
 		UPDATE=1
 	elif [ $UPDATE_CAIRO_DOCK -eq 1 ]; then
-		echo -e "$VERT""Recompilation des plug-ins suite à la mise à jour de Cairo-Dock Core"
+		if [ $LG -eq 0 ]; then
+			echo -e "$VERT""Recompilation des plug-ins suite à la mise à jour de Cairo-Dock Core"
+		else
+			echo -e "$VERT""Recompilation due to some changes of Cairo-Dock API"
+		fi
 		install_cairo_dock_plugins
 	fi
 	echo -e "$NORMAL"
 
 	## PLUG-INS EXTRAS ##
 
-	echo -e "$BLEU""Recherche des mises à jour pour les Plug-ins Extras"
+	echo -e "$BLEU""$LG_SEARCH_FOR Plug-ins Extras"
 	if test -e "$BZR_REV_FILE_PLUG_INS_EXTRAS"; then # le fichier existe
 		ACTUAL_PLUG_INS_EXTRAS_VERSION=`cat "$BZR_REV_FILE_PLUG_INS_EXTRAS"`
 	else
@@ -446,28 +497,11 @@ update(){
 		ACTUAL_PLUG_INS_EXTRAS_VERSION=0
 	fi
 
-	if [ $ACTUAL_PLUG_INS_EXTRAS_VERSION -eq 0 ] && [ ! -d $DIR/$CAIRO_DOCK_PLUG_INS_EXTRAS_LP_BRANCH ]; then # les extras ont été ajoutés après donc il faudra p-ê les télécharger ; mais ils peuvent déjà avoir été dl
-		if [ $BZR_DL_MODE -eq 1 ]; then
-			BZR_DL="branch"
-		else
-			BZR_DL="checkout --lightweight -q"
-		fi
-
-		echo -e "$BLEU""Téléchargement des Plug-ins Extras"
-		bzr $BZR_DL lp:$CAIRO_DOCK_PLUG_INS_EXTRAS_LP_BRANCH
-		if [ $? -ne 0 ]; then
-			echo -e "$ROUGE""Impossible de se connecter au serveur de Launchpad, veuillez vérifier votre connexion internet ou retenter plus tard"
-			exit
-		else
-			NEW_PLUG_INS_EXTRAS_VERSION=`bzr revno -q $CAIRO_DOCK_PLUG_INS_EXTRAS_LP_BRANCH`
-			echo $NEW_PLUG_INS_EXTRAS_VERSION > $BZR_REV_FILE_PLUG_INS_EXTRAS
-			echo -e "\nCairo-Dock-Plug-ins-Extras : rev $NEW_PLUG_INS_EXTRAS_VERSION \n"
-			echo -e "\nCairo-Dock-Plug-ins-Extras : rev $NEW_PLUG_INS_EXTRAS_VERSION \n" >> $LOG_CAIRO_DOCK
-		fi
-	elif [ $BZR_DL_MODE -eq 1 ]; then
+	if [ $BZR_DL_MODE -eq 1 ]; then
 		cd $DIR/$CAIRO_DOCK_PLUG_INS_EXTRAS_LP_BRANCH
 		bzr $BZR_UP lp:$CAIRO_DOCK_PLUG_INS_EXTRAS_LP_BRANCH
 		NEW_PLUG_INS_EXTRAS_VERSION=`bzr revno -q`
+		bzr log -l1 --line
 		cd $DIR/
 	else
 		NEW_PLUG_INS_EXTRAS_VERSION=`bzr revno -q $CAIRO_DOCK_PLUG_INS_EXTRAS_LP_BRANCH`
@@ -481,7 +515,7 @@ update(){
 	echo -e "\nCairo-Dock-Plug-Ins-Extras : rev $ACTUAL_PLUG_INS_EXTRAS_VERSION -> $NEW_PLUG_INS_EXTRAS_VERSION \n" >> $LOG_CAIRO_DOCK
 
 	if [ $ACTUAL_PLUG_INS_EXTRAS_VERSION -ne $NEW_PLUG_INS_EXTRAS_VERSION ]; then
-		echo -e "$VERT""Une mise à jour des Plug-ins Extras a été détectée"
+		echo -e "$VERT""$LG_UP_FOUND Plug-Ins Extras"
 		install_cairo_dock_plugins_extras
 		UPDATE=1
 	fi
@@ -491,13 +525,22 @@ update(){
  	if [ $UPDATE -eq 1 ]; then
 	    check $LOG_CAIRO_DOCK "CD"
 	else
-		echo -e "$BLEU""Pas de mise à jour disponible"
-		echo -e "$NORMAL"
-		if [[ `ps aux | grep -e "[c]airo-dock -"` ]]; then
-			dbus-send --session --dest=org.cairodock.CairoDock /org/cairodock/CairoDock org.cairodock.CairoDock.ShowDialog string:"Cairo-Dock: Pas de mise à jour
-Cairo-Dock: no Update" int32:8 string:terminal string:any string:none
+		if [ $LG -eq 0 ]; then
+			echo -e "$BLEU""Pas de mise à jour disponible"
+			echo -e "$NORMAL"
+			if [[ `ps aux | grep -e "[c]airo-dock -"` ]]; then
+				dbus-send --session --dest=org.cairodock.CairoDock /org/cairodock/CairoDock org.cairodock.CairoDock.ShowDialog string:"Cairo-Dock: Pas de mise à jour" int32:8 string:terminal string:any string:none
+			else
+				zenity --info --title=Cairo-Dock --text="$LG_CLOSE"
+			fi
 		else
-			zenity --info --title=Cairo-Dock --text="Cliquez sur Ok pour fermer le terminal."
+			echo -e "$BLEU""No update available"
+			echo -e "$NORMAL"
+			if [[ `ps aux | grep -e "[c]airo-dock -"` ]]; then
+				dbus-send --session --dest=org.cairodock.CairoDock /org/cairodock/CairoDock org.cairodock.CairoDock.ShowDialog string:"Cairo-Dock: no update" int32:8 string:terminal string:any string:none
+			else
+				zenity --info --title=Cairo-Dock --text="$LG_CLOSE"
+			fi
 		fi
 		exit
 	fi
@@ -510,33 +553,45 @@ Cairo-Dock: no Update" int32:8 string:terminal string:any string:none
 #######################################################################
 
 check() {
-	echo -e "$NORMAL""Vérification de l'intégrité de l'installation"
+	if [ $LG -eq 0 ]; then
+		echo -e "$NORMAL""Vérification de l'intégrité de l'installation"
+		LG_INSTALL_OK="L'installation s'est terminée correctement."
+	else
+		echo -e "$NORMAL""Verification of the installation"
+		LG_INSTALL_OK="Successfully installed"
+	fi
 	sleep 1
 
 	if [ $2 = "CD" ]; then
 		if [ $ERROR -ne 0 ]; then
 			echo -e "$ROUGE"
-			echo "Des erreurs ont été détéctées lors de l'installation."
-			egrep -i "( error| Erreur)" $1
-			echo "Veuillez consulter le fichier log.txt pour plus d'informations et vous rendre sur le forum de cairo-dock pour reporter l'erreur dans la section \"Version BZR\" "
+			if [ $LG -eq 0 ]; then
+				echo "Des erreurs ont été détéctées lors de l'installation."
+				egrep -i "( error| Erreur)" $1
+				echo "Veuillez consulter le fichier log.txt pour plus d'informations et vous rendre sur le forum de cairo-dock pour reporter l'erreur dans la section \"Version BZR\" "
+			else
+				echo "Some errors have been detected during the installation"
+				egrep -i "( error| Erreur)" $1
+				echo "Please keep a copy of the file 'log.txt' and report the bug on our forum (http://www.cairo-dock.org) on the section \"Version BZR\". Thanks ! "
+			fi
 			echo -e "$NORMAL"
 			if [[ `ps aux | grep -e "[c]airo-dock -"` ]]; then
 				dbus-send --session --dest=org.cairodock.CairoDock /org/cairodock/CairoDock org.cairodock.CairoDock.ShowDialog string:"Cairo-Dock: Erreur à la compilation
 Cairo-Dock: Compilation error
 	=> http://www.cairo-dock.org" int32:10 string:terminal string:any string:none
 			else
-				zenity --info --title=Cairo-Dock --text="Cliquez sur Ok pour fermer le terminal."
+				zenity --info --title=Cairo-Dock --text="$LG_CLOSE"
 			fi
 			exit
 		else
 			echo -e "$VERT"
-			echo "L'installation s'est terminée correctement."
+			echo "$LG_INSTALL_OK"
 			echo -e "$NORMAL"
 			if [[ `ps aux | grep -e "[c]airo-dock -"` ]]; then
 				dbus-send --session --dest=org.cairodock.CairoDock /org/cairodock/CairoDock org.cairodock.CairoDock.ShowDialog string:"Cairo-Dock: Mis à jour avec succès
 Cairo-Dock: Updated successfully" int32:8 string:terminal string:any string:none
 			else
-				zenity --info --title=Cairo-Dock --text="Cliquez sur Ok pour fermer le terminal."
+				zenity --info --title=Cairo-Dock --text="$LG_CLOSE"
 			fi
 			exit
 		fi
@@ -547,38 +602,53 @@ testping () {
 	if [ "`ping -c1 $DOMAIN |grep received|cut -d, -f2`" != " 1 received" ]
 	then
 		echo -e "$ROUGE"
-		echo "Le test de connexion vers Internet à échouée"
-		echo "Réglez ce problème avant de poursuivre ce script"
-		echo "Internet Connexion Error"
+		if [ $LG -eq 0 ]; then
+			echo "Le test de connexion vers Internet à échouée"
+			echo "Réglez ce problème avant de poursuivre ce script"
+		else
+			echo "Internet Connexion Error"
+			echo "It's required if you want to access to our server"
+		fi
 		echo -e "$NORMAL"
 		sleep 5
 		exit
 	else
-		echo -e "$VERT""\nConnexion Internet \t [ OK ]\n""$NORMAL"
+		echo -e "$VERT""\nInternet Connexion\t [ OK ]\n""$NORMAL"
 	fi
 }
 
 check_new_script() {
 	cp $SCRIPT $SCRIPT_SAVE #pour moi :)
 
-	echo -e "$NORMAL""Test de la connexion Internet (obligatoire)"
-	testping
-	
-	echo "Vérification de la disponibilité d'un nouveau script"
+	if [ $LG -eq 0 ]; then
+		echo -e "$NORMAL""Test de la connexion Internet (Obligatoire)"
+		testping
+		echo "Vérification de la disponibilité d'un nouveau script"
+		LG_UPDL="Une mise à jour a été téléchargée"
+		LG_CLICKHERE="Cliquez sur Ok pour relancer le script."
+		LG_SCRIPT="Vous possédez la dernière version du script de M@v"
+	else
+		echo -e "$NORMAL""Connexion Internet test (Required)"
+		testping
+		echo "It checks if a new script exists"
+		LG_UPDL="An update has been downloaded"
+		LG_CLICKHERE="Click here in order to relauch the script."
+		LG_SCRIPT="You have the latest version of M@v'script"
+	fi
 	wget $HOST/$SCRIPT -q -O $SCRIPT_NEW
 	diff $SCRIPT $SCRIPT_NEW >/dev/null
 	if [ $? -eq 1 ]; then
 		echo -e "$ROUGE"
-		echo "Une mise à jour a été téléchargée"
+		echo "$LG_UPDL"
 		echo -e "$NORMAL"
 		mv $SCRIPT_NEW $SCRIPT
 		sudo chmod u+x $SCRIPT
-		zenity --info --title=Cairo-Dock --text="Cliquez sur Ok pour relancer le script."
+		zenity --info --title=Cairo-Dock --text="$LG_CLICKHERE"
 		./$SCRIPT
 		exit
 	else
 		clear
-		echo -e "$VERT""\n\tVous possédez la dernière version du script de M@v"
+		echo -e "$VERT""\n\t$LG_SCRIPT"
 	fi
 	echo -e "$NORMAL"
 	rm $SCRIPT_NEW
@@ -593,36 +663,70 @@ check_new_script() {
 
 detect_env_graph() 
 {
-	echo -e "$BLEU""Détection de l'environnement graphique"
-	## kde 3/4
-	if [[ `ps aux | grep -e "[k]smserver"` ]]; then
-	   if [[ `ps aux | grep -e "[k]ded4" ` ]]; then
-	       ENV=2;
-	       echo -e "$VERT""Votre environnement est KDE 4 \n"
-	   else
-	       ENV=2;
-	       echo -e "$VERT""Votre environnement est KDE 3 \n"
-	   fi
-	## gnome
-	elif [[ `ps aux | grep -e "[g]nome-settings-daemon" ` ]]; then
-	   ENV=1;
-	   if [ $DISTRIB = "gutsy" ]; then
-	       PLUGINS_INTEGRATION=$PLUGINS_GNOME_OLD
-	   else
-	       PLUGINS_INTEGRATION=$PLUGINS_GNOME
-	   fi
-	   echo -e "$VERT""Votre environnement est GNOME \n"
-	## xfce4
-	elif [[ `ps aux | grep -e "[x]fce-mcs-manager"`  ]]; then
-	   ENV=3;
-	   PLUGINS_INTEGRATION=$PLUGINS_XFCE
-	   echo -e "$VERT""Votre environnement est XFCE 4 \n"
-	elif [[ `ps aux | grep -e "xfce"`  ]]; then
-	   ENV=3;
-	   PLUGINS_INTEGRATION=$PLUGINS_XFCE
-	   echo -e "$VERT""Votre environnement est XFCE \n"
+	if [ $LG -eq 0 ]; then
+		echo -e "$BLEU""Détection de l'environnement graphique"
+		## kde 3/4
+		if [[ `ps aux | grep -e "[k]smserver"` ]]; then
+		   if [[ `ps aux | grep -e "[k]ded4" ` ]]; then
+		       ENV=2;
+		       echo -e "$VERT""Votre environnement est KDE 4 \n"
+		   else
+		       ENV=2;
+		       echo -e "$VERT""Votre environnement est KDE 3 \n"
+		   fi
+		## gnome
+		elif [[ `ps aux | grep -e "[g]nome-settings-daemon" ` ]]; then
+		   ENV=1;
+		   if [ $DISTRIB = "gutsy" ]; then
+		       PLUGINS_INTEGRATION=$PLUGINS_GNOME_OLD
+		   else
+		       PLUGINS_INTEGRATION=$PLUGINS_GNOME
+		   fi
+		   echo -e "$VERT""Votre environnement est GNOME \n"
+		## xfce4
+		elif [[ `ps aux | grep -e "[x]fce-mcs-manager"`  ]]; then
+		   ENV=3;
+		   PLUGINS_INTEGRATION=$PLUGINS_XFCE
+		   echo -e "$VERT""Votre environnement est XFCE 4 \n"
+		elif [[ `ps aux | grep -e "xfce"`  ]]; then
+		   ENV=3;
+		   PLUGINS_INTEGRATION=$PLUGINS_XFCE
+		   echo -e "$VERT""Votre environnement est XFCE \n"
+		else
+		   echo -e "Type de session locale non détéctée, ou non supportée vous utilisez e17, fluxbox ???... \n"
+		fi
 	else
-	   echo -e "Type de session locale non détéctée, ou non supportée vous utilisez e17, fluxbox ???... \n"
+		echo -e "$BLEU""What's your DE (Desktop Environment)"
+		## kde 3/4
+		if [[ `ps aux | grep -e "[k]smserver"` ]]; then
+		   if [[ `ps aux | grep -e "[k]ded4" ` ]]; then
+		       ENV=2;
+		       echo -e "$VERT""Your Desktop Environment is KDE 4 \n"
+		   else
+		       ENV=2;
+		       echo -e "$VERT""Your Desktop Environment is KDE 3 \n"
+		   fi
+		## gnome
+		elif [[ `ps aux | grep -e "[g]nome-settings-daemon" ` ]]; then
+		   ENV=1;
+		   if [ $DISTRIB = "gutsy" ]; then
+		       PLUGINS_INTEGRATION=$PLUGINS_GNOME_OLD
+		   else
+		       PLUGINS_INTEGRATION=$PLUGINS_GNOME
+		   fi
+		   echo -e "$VERT""Your Desktop Environment is GNOME \n"
+		## xfce4
+		elif [[ `ps aux | grep -e "[x]fce-mcs-manager"`  ]]; then
+		   ENV=3;
+		   PLUGINS_INTEGRATION=$PLUGINS_XFCE
+		   echo -e "$VERT""Your Desktop Environment is XFCE 4 \n"
+		elif [[ `ps aux | grep -e "xfce"`  ]]; then
+		   ENV=3;
+		   PLUGINS_INTEGRATION=$PLUGINS_XFCE
+		   echo -e "$VERT""Your Desktop Environment is XFCE \n"
+		else
+		   echo -e "You don't use a common Desktop Environment, don't hesitate to report any bugs ;) \n"
+		fi
 	fi
 
 	return $ENV
@@ -630,31 +734,59 @@ detect_env_graph()
 } 
 
 detect_distrib() {
-	echo -e "$BLEU""Détection de la distribution"
+	if [ $LG -eq 0 ]; then
+		echo -e "$BLEU""Détection de la distribution"
+	else
+		echo -e "$BLEU""What's your distribution"
+	fi
 	DISTRIB=$(grep -e DISTRIB_CODENAME /etc/lsb-release | cut -d= -f2)
 
-	if [ -n $DISTRIB ]; then
-		echo -e "$VERT""Votre distribution est $(grep -e DISTRIB_DESCRIPTION /etc/lsb-release | cut -d= -f2) ($DISTRIB)"
-		echo -e "$NORMAL"
-	elif [ $(grep -c ^Debian /etc/issue) -eq 1 ]; then
-		echo -e "$VERT""Votre distribution est Debian"
-		echo -e "$NORMAL"
-	elif [ $(grep -c ^"Linux Mint" /etc/issue) -eq 1 ]; then
-		echo -e "$VERT""Votre distribution est Linux Mint"
-		echo -e "$NORMAL"
-	else 
-		echo -e "$ROUGE""Impossible de déterminer la distribution\nATTENTION : Ce script est prévu pour Ubuntu et Debian\nWARNING : This script is provided for Ubuntu and Debian"
-		echo -e "$NORMAL"
+	if [ $LG -eq 0 ]; then
+		if [ -n $DISTRIB ]; then
+			echo -e "$VERT""Votre distribution est $(grep -e DISTRIB_DESCRIPTION /etc/lsb-release | cut -d= -f2) ($DISTRIB)"
+			echo -e "$NORMAL"
+		elif [ $(grep -c ^Debian /etc/issue) -eq 1 ]; then
+			echo -e "$VERT""Votre distribution est Debian"
+			echo -e "$NORMAL"
+		elif [ $(grep -c ^"Linux Mint" /etc/issue) -eq 1 ]; then
+			echo -e "$VERT""Votre distribution est Linux Mint"
+			echo -e "$NORMAL"
+		else 
+			echo -e "$ROUGE""Impossible de déterminer la distribution\nATTENTION : Ce script est prévu pour Ubuntu et Debian\nWARNING : This script is provided for Ubuntu and Debian"
+			echo -e "$NORMAL"
+		fi
+	else
+		if [ -n $DISTRIB ]; then
+			echo -e "$VERT""Your distribution is $(grep -e DISTRIB_DESCRIPTION /etc/lsb-release | cut -d= -f2) ($DISTRIB)"
+			echo -e "$NORMAL"
+		elif [ $(grep -c ^Debian /etc/issue) -eq 1 ]; then
+			echo -e "$VERT""Your distribution is Debian"
+			echo -e "$NORMAL"
+		elif [ $(grep -c ^"Linux Mint" /etc/issue) -eq 1 ]; then
+			echo -e "$VERT""Your distribution is Linux Mint"
+			echo -e "$NORMAL"
+		else 
+			echo -e "$ROUGE""WARNING : This script is provided for Ubuntu and Debian"
+			echo -e "$NORMAL"
+		fi
 	fi
 }
 
 
 check_dependancies() {
-	echo -e "$BLEU""Vérification des paquets nécessaires à la compilation" 
+	if [ $LG -eq 0 ]; then
+		echo -e "$BLEU""Vérification des paquets nécessaires à la compilation" 
+	else
+		echo -e "$BLEU""Check up: Packages needed for the compilation" 
+	fi
 
 	dpkg -s sudo |grep installed |grep "install ok" > /dev/null	
 		if [ $? -eq 1 ]; then #Debian
-			echo -e "$ROUGE"" Le paquet sudo n'est pas installé, veuillez l'installer avant de continuer \n 'sudo' package isn't installed. Please install it.""$NORMAL"""
+			if [ $LG -eq 0 ]; then
+				echo -e "$ROUGE"" Le paquet 'sudo' n'est pas installé, veuillez l'installer avant de continuer.""$NORMAL"""
+			else
+				echo -e "$ROUGE"" 'sudo' package isn't installed. Please install it.""$NORMAL"""
+			fi
 			exit
 		fi
 
@@ -662,7 +794,11 @@ check_dependancies() {
 
 	sudo apt-get install -s cairo-dock | grep Inst > /dev/null	
 	if [ $? -eq 1 ]; then  #CD est installé par paquet
-		echo -e "$ROUGE"" Désinstallation du paquet 'Cairo-Dock' \n Uninstallation of 'Cairo-Dock' package.""$NORMAL"""
+		if [ $LG -eq 0 ]; then
+			echo -e "$ROUGE"" Désinstallation du paquet 'Cairo-Dock' ""$NORMAL"""
+		else
+			echo -e "$ROUGE""Uninstallation of 'Cairo-Dock' package.""$NORMAL"""
+		fi
 		sudo apt-get purge -qq cairo-dock
 	fi
 
@@ -670,7 +806,7 @@ check_dependancies() {
 	do
 		dpkg -s $tested |grep installed |grep "install ok" > /dev/null	
 		if [ $? -eq 1 ]; then
-			echo -e "$ROUGE""Le paquet $tested n'est pas installé : Installation""$NORMAL"""
+			echo -e "$ROUGE""This package $tested isn't installed : Installation""$NORMAL"""
 			sudo apt-get install -qq $tested  >> $LOG_CAIRO_DOCK
 		fi
 	done
@@ -678,13 +814,13 @@ check_dependancies() {
 	if [ $ENV -eq 1 ]; then #Gnome
 		dpkg -s $NEEDED_GNOME |grep installed |grep "install ok" > /dev/null	
 		if [ $? -eq 1 ]; then
-			echo -e "$ROUGE""Le paquet $NEEDED_GNOME n'est pas installé : Installation""$NORMAL"""
+			echo -e "$ROUGE""This package $NEEDED_GNOME isn't installed : Installation""$NORMAL"""
 			sudo apt-get install -qq $NEEDED_GNOME  >> $LOG_CAIRO_DOCK
 		fi
 	elif [ $ENV -eq 3 ]; then #XFCE
 		dpkg -s $NEEDED_XFCE |grep installed |grep "install ok" > /dev/null	
 		if [ $? -eq 1 ]; then
-			echo -e "$ROUGE""Le paquet $NEEDED_XFCE n'est pas installé : Installation""$NORMAL"""
+			echo -e "$ROUGE""This package $NEEDED_XFCE isn't installed : Installation""$NORMAL"""
 			sudo apt-get install -qq $NEEDED_XFCE  >> $LOG_CAIRO_DOCK
 		fi
 	fi
@@ -692,36 +828,40 @@ check_dependancies() {
 		if [ $DISTRIB = 'karmic' ] || [ `lsb_release -rs | cut -d. -f1` -ge 10 ]; then #karmic ou nouveau
 			dpkg -s $NEEDED_KARMIC |grep installed |grep "install ok" > /dev/null
 			if [ $? -eq 1 ]; then
-				echo -e "$ROUGE""Le paquet $NEEDED_KARMIC n'est pas installé : Installation""$NORMAL"""
+				echo -e "$ROUGE""This package $NEEDED_KARMIC isn't installed : Installation""$NORMAL"""
 				sudo apt-get install -qq $NEEDED_KARMIC  >> $LOG_CAIRO_DOCK
 			fi
 		else
 			dpkg -s $NEEDED_B_KARMIC |grep installed |grep "install ok" > /dev/null
 			if [ $? -eq 1 ]; then
-				echo -e "$ROUGE""Le paquet $NEEDED_B_KARMIC n'est pas installé : Installation""$NORMAL"""
+				echo -e "$ROUGE""This package $NEEDED_B_KARMIC isn't installed : Installation""$NORMAL"""
 				sudo apt-get install -qq $NEEDED_B_KARMIC  >> $LOG_CAIRO_DOCK
 			fi
 		fi
 	elif [ $(grep -c ^Debian /etc/issue) -eq 1 ]; then
 		dpkg -s $NEEDED_KARMIC |grep installed |grep "install ok" > /dev/null
 		if [ $? -eq 1 ]; then
-			echo -e "$ROUGE""Le paquet $NEEDED_KARMIC n'est pas installé : Installation""$NORMAL"""
+			echo -e "$ROUGE""This package $NEEDED_KARMIC isn't installed : Installation""$NORMAL"""
 			sudo apt-get install -qq $NEEDED_KARMIC  >> $LOG_CAIRO_DOCK
 		fi
 	else
 		dpkg -s $NEEDED_KARMIC |grep installed |grep "install ok" > /dev/null
 		if [ $? -eq 1 ]; then
-			echo -e "$ROUGE""Le paquet $NEEDED_KARMIC n'est pas installé : Installation""$NORMAL"""
+			echo -e "$ROUGE""This package $NEEDED_KARMIC isn't installed : Installation""$NORMAL"""
 			sudo apt-get install -qq $NEEDED_KARMIC  >> $LOG_CAIRO_DOCK
 		fi
 		dpkg -s $NEEDED_B_KARMIC |grep installed |grep "install ok" > /dev/null
 		if [ $? -eq 1 ]; then
-			echo -e "$ROUGE""Le paquet $NEEDED_B_KARMIC n'est pas installé : Installation""$NORMAL"""
+			echo -e "$ROUGE""This package $NEEDED_B_KARMIC isn't installed : Installation""$NORMAL"""
 			sudo apt-get install -qq $NEEDED_B_KARMIC  >> $LOG_CAIRO_DOCK
 		fi
 	fi
 
-	echo -e "$VERT""Vérification OK"
+	if [ $LG -eq 0 ]; then
+		echo -e "$VERT""Vérification [ OK ]"
+	else
+		echo -e "$VERT""Verification [ OK ]"
+	fi
 	echo -e "$NORMAL"""
 	sleep 1
 }
@@ -742,17 +882,25 @@ ppa_weekly() {
 		sudo -v
 		W_SUDO="sudo"
 	else
-		echo -e "$ROUGE""Désolé, seuls Ubuntu et Debian sont supportés. En cas de problème, merci de nous contacter sur notre forum.\n Sorry but only Debian and Ubuntu are supported. If there is a problem, please contact us on our forum.""$NORMAL"""
+		if [ $LG -eq 0 ]; then
+			echo -e "$ROUGE""Désolé, seuls Ubuntu et Debian sont supportés. En cas de problème, merci de nous contacter sur notre forum.""$NORMAL"""
+		else
+			echo -e "$ROUGE""Sorry but only Debian and Ubuntu are supported. If there is a problem, please contact us on our forum.""$NORMAL"""
+		fi
 		exit
 	fi
 
 	if [ -d $DIR/$CAIRO_DOCK_CORE_LP_BRANCH ]; then
-		echo -e "$BLEU""Désinstallation de la version BZR / Uninstallation of the BZR version"
+		if [ $LG -eq 0 ]; then
+			echo -e "$BLEU""Désinstallation de la version BZR"
+		else
+			echo -e "$BLEU""Uninstallation of the BZR version"
+		fi
 		echo -e "$NORMAL"""
 		uninstall
 	fi
 
-	echo -e "$VERT""Ajout du dépôt ppa weekly"
+	echo -e "$VERT""PPA weekly - Repository"
 	echo "Ajout du dépôt ppa weekly" >> $LOG_CAIRO_DOCK
 	echo -e "$NORMAL"""
 
@@ -766,13 +914,13 @@ ppa_weekly() {
 	echo -e "$BLEU""Installation des paquets Cairo-Dock, version instable"
 	echo -e "$NORMAL"""
 	$W_SUDO apt-get install cairo-dock  >> $LOG_CAIRO_DOCK
-	zenity --info --title=Cairo-Dock --text="Cliquez sur Ok pour fermer le terminal."
+	zenity --info --title=Cairo-Dock --text="$LG_CLOSE"
 	exit
 }
 
 
 about() {
-	echo "Auteur : Mav"
+	echo "Author : Mav & Matttbe"
 	echo "Contact : mav@cairo-dock.org"
 	exit
 }
@@ -800,83 +948,160 @@ elif [ "$1" = "-e" ]; then # possibilité d'ajouter des args
 	fi
 	rm -f $DIR/.args
 fi
-	
-if [ $DEBUG -ne 1 ]; then
-	check_new_script
-fi
 
-LG_CMD=`echo $LANG | grep fr`
-if [ -n $LG_CMD ]; then 
-	LG="FR" 
-fi
-
-
-echo -e "$NORMAL""Script d'installation de la version BZR de Cairo-Dock\n"
-echo -e "Veuillez choisir l'option d'installation : \n"
-
-if [ -d $DIR/$CAIRO_DOCK_CORE_LP_BRANCH ]; then
-	echo -e "\t1 --> Mettre à jour la version BZR installée (Update)"
-	echo -e "\t2 --> Reinstaller la version BZR actuelle (Reinstall)"
-	echo -e "\t3 --> Désinstaller la version BZR (Uninstall)"
-	echo -e "\t4 --> Installer le ppa weekly au lieu de BZR (Install weekly ppa instead of BZR)"
-	echo -e "\t5 --> A propos (About)"
-
-	echo -e "\nVotre choix : "
-	read answer_menu
-
-	case $answer_menu in
-
-		"1")
-			detect_distrib
-			detect_env_graph
-			check_dependancies
-			update
-		;;
-
-		"2")
-			detect_distrib
-			detect_env_graph
-			check_dependancies
-			reinstall
-		;;
-
-		"3")
-			uninstall
-			zenity --info --title=Cairo-Dock --text="Cairo-Dock a été désinstallé, veuillez lire le message dans le terminal"
-			exit
-		;;
-
-		"4")
-			ppa_weekly
-		;;
-
-		"5")
-			about
-		;;
-	esac
+echo $LANG | grep -c ^fr > /dev/null
+if [ $? -eq 0 ]; then 
+	LG=0
+	LG_CLOSE="Cliquez sur Ok pour fermer le terminal."
 else
-	echo -e "\t1 --> Installer la version BZR pour la première fois (Install)"
-	echo -e "\t2 --> Installer le ppa weekly au lieu de BZR (Install weekly ppa instead of BZR)"
-	echo -e "\t3 --> A propos (About)"
+	LG=1
+	LG_CLOSE="Click on Ok in order to close the terminal."
+fi
 
-	echo -e "\nVotre choix : "
-	read answer_menu
+if [ $DEBUG -ne 1 ]; then
+	if [ `date +%Y%m%d` -gt 20100205 ];then
+		check_new_script
+	fi
+fi
 
-	case $answer_menu in
+if [ $LG -eq 0 ]; then
+	echo -e "$NORMAL""Script d'installation de la version BZR de Cairo-Dock (FR)\n"
+	echo -e "Veuillez choisir l'option d'installation : \n"
 
-		"1")
-			detect_distrib
-			detect_env_graph
-			check_dependancies
-			install
-		;;
+	if [ -d $DIR/$CAIRO_DOCK_CORE_LP_BRANCH ]; then
+		echo -e "\t1 --> Mettre à jour la version BZR installée"
+		echo -e "\t2 --> Reinstaller la version BZR actuelle"
+		echo -e "\t3 --> Désinstaller la version BZR"
+		echo -e "\t4 --> Installer le ppa weekly au lieu de BZR "
+		echo -e "\t5 --> A propos"
 
-		"2")
-			ppa_weekly
-		;;
+		echo -e "\nVotre choix : "
+		read answer_menu
 
-		"3")
-			about
-		;;
-	esac
+		case $answer_menu in
+
+			"1")
+				detect_distrib
+				detect_env_graph
+				check_dependancies
+				update
+			;;
+
+			"2")
+				detect_distrib
+				detect_env_graph
+				check_dependancies
+				reinstall
+			;;
+
+			"3")
+				uninstall
+				zenity --info --title=Cairo-Dock --text="Cairo-Dock a été désinstallé, veuillez lire le message dans le terminal"
+				exit
+			;;
+
+			"4")
+				ppa_weekly
+			;;
+
+			"5")
+				about
+			;;
+		esac
+	else
+		echo -e "\t1 --> Installer la version BZR pour la première fois"
+		echo -e "\t2 --> Installer le ppa weekly au lieu de BZR"
+		echo -e "\t3 --> A propos"
+
+		echo -e "\nVotre choix : "
+		read answer_menu
+
+		case $answer_menu in
+
+			"1")
+				detect_distrib
+				detect_env_graph
+				check_dependancies
+				install
+			;;
+
+			"2")
+				ppa_weekly
+			;;
+
+			"3")
+				about
+			;;
+		esac
+	fi
+else
+		echo -e "$NORMAL""Installation script for BZR version of Cairo-Dock (EN)\n"
+	echo -e "What do you want : \n"
+
+	if [ -d $DIR/$CAIRO_DOCK_CORE_LP_BRANCH ]; then
+		echo -e "\t1 --> Update Cairo-Dock to the latest BZR revision"
+		echo -e "\t2 --> Reinstall the current version"
+		echo -e "\t3 --> Uninstall the current version"
+		echo -e "\t4 --> Install weekly ppa instead of BZR"
+		echo -e "\t5 --> About this script"
+
+		echo -e "\nYour choice : "
+		read answer_menu
+
+		case $answer_menu in
+
+			"1")
+				detect_distrib
+				detect_env_graph
+				check_dependancies
+				update
+			;;
+
+			"2")
+				detect_distrib
+				detect_env_graph
+				check_dependancies
+				reinstall
+			;;
+
+			"3")
+				uninstall
+				zenity --info --title=Cairo-Dock --text="Cairo-Dock has been uninstalled, please read the message into the terminal"
+				exit
+			;;
+
+			"4")
+				ppa_weekly
+			;;
+
+			"5")
+				about
+			;;
+		esac
+	else
+		echo -e "\t1 --> Install the current version of Cairo-Dock from BZR server for the first time (Install)"
+		echo -e "\t2 --> Install weekly ppa instead of BZR"
+		echo -e "\t3 --> About this script"
+
+		echo -e "\nYour choice : "
+		read answer_menu
+
+		case $answer_menu in
+
+			"1")
+				detect_distrib
+				detect_env_graph
+				check_dependancies
+				install
+			;;
+
+			"2")
+				ppa_weekly
+			;;
+
+			"3")
+				about
+			;;
+		esac
+	fi
 fi

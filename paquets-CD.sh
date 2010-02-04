@@ -4,15 +4,17 @@ DIR=$(pwd) # -> /opt/cairo-dock_bzr/Paquets/*.*.*
 
 DIR_VERIF=`echo $DIR | grep -c /Paquets/`
 
-UBUNTU_CORE="karmic jaunty intrepid hardy debian"
-UBUNTU_PLUG_INS="karmic jaunty intrepid hardy debian"
+UBUNTU_CORE="lucid karmic jaunty intrepid hardy debian debian2"
+UBUNTU_PLUG_INS="lucid karmic jaunty intrepid hardy debian debian2"
 CL="debian/changelog"
-ARG_CONFIGURE="--enable-network-monitor --enable-rssreader --enable-scooby-do"
+ARG_CONFIGURE="--enable-network-monitor --enable-scooby-do"
 DPUT_PSEUDO="matttbe"
 
 ### CHANGELOG ###
 CHANGELOG='\\n  * New Upstream Version (sync from BZR).'
 CHANGELOG_PLUG_INS='\\n  * New Upstream Version (sync from BZR).'
+#CHANGELOG='\\n  * New Upstream Version (2.1.3-1).'
+#CHANGELOG_PLUG_INS='\\n  * New Upstream Version (2.1.3-1).\n  * debian/rules:\n   - Added RSS-Reader applet'
 
 #	## Pour dput.cf :
 #	  * remplacer 'matttbe' ci-dessous et ci-dessus par votre pseudo
@@ -36,7 +38,7 @@ CHANGELOG_PLUG_INS='\\n  * New Upstream Version (sync from BZR).'
 #	  * Les paquets sont envoyés sur son propre ppa pour être ensuite copier vers les ppa de CD (obligé à cause des 2 tarball à envoyer par version...
 #	  * Le script doit être exécuté depuis le dossier Paquets/x.x.x/ => .././paquets-CD.sh
 
-
+SLEEP_PG=$2
 TRAP_ON='echo -e "\e]0;$BASH_COMMAND\007"' # Afficher la commande en cours dans le terminal
 TRAP_OFF="trap DEBUG"
 date_AJD=`date '+%Y%m%d'`
@@ -193,6 +195,8 @@ for RLS in $UBUNTU_CORE; do
 	cp -r ../../../debian/$RLS/debian .
 	if test "$RLS" = "debian"; then
 		PAQUET="cairo-dock ($VERSION_DEB~$RLS) jaunty; urgency=low"
+	elif test "$RLS" = "debian2"; then
+		PAQUET="cairo-dock ($VERSION_DEB~$RLS) hardy; urgency=low"
 	else
 		PAQUET="cairo-dock ($VERSION~$RLS) $RLS; urgency=low"
 	fi
@@ -205,13 +209,18 @@ for RLS in $UBUNTU_CORE; do
 	debuild -S -sa >> $DIR/log.txt
 	if test "$RLS" = "debian"; then
 		trickle -u $TRICKLE dput $DPUT_PSEUDO-jaunty ../cairo-dock_"$VERSION_DEB"~"$RLS"_source.changes
+	elif test "$RLS" = "debian2"; then
+		trickle -u $TRICKLE dput $DPUT_PSEUDO-hardy ../cairo-dock_"$VERSION_DEB"~"$RLS"_source.changes
 	else
 		trickle -u $TRICKLE dput $DPUT_PSEUDO-exp-$RLS ../cairo-dock_"$VERSION"~"$RLS"_source.changes
 	fi
 	$TRAP_OFF
 done
 
-
+if [ "$SLEEP_PG" != "" ]; then
+	echo -e "$ROUGE""\nPAUSE DE $(($SLEEP_PG/60)) minutes\n""$NORMAL"
+	sleep $SLEEP_PG
+fi
 
 ###### PLUG-INS ######
 
@@ -225,10 +234,10 @@ for RLS in $UBUNTU_PLUG_INS; do
 		rm -r debian
 	fi
 	cp -r ../../../debian/$RLS/plug-ins/debian .
-	if test "$RLS" = "hardy"; then
-		PAQUET_PLUG_INS="cairo-dock-plug-ins ($VERSION_PG~$RLS) intrepid; urgency=low"
-	elif test "$RLS" = "debian"; then
+	if test "$RLS" = "debian"; then
 		PAQUET_PLUG_INS="cairo-dock-plug-ins ($VERSION_DEB_PG~$RLS) jaunty; urgency=low"
+	elif test "$RLS" = "debian2"; then
+		PAQUET_PLUG_INS="cairo-dock-plug-ins ($VERSION_DEB_PG~$RLS) hardy; urgency=low"
 	else
 		PAQUET_PLUG_INS="cairo-dock-plug-ins ($VERSION_PG~$RLS) $RLS; urgency=low"
 	fi
@@ -239,17 +248,21 @@ for RLS in $UBUNTU_PLUG_INS; do
 	sed -i "1i$PAQUET_PLUG_INS" $CL
 	trap "$TRAP_ON" DEBUG
 	debuild -S -sa >> $DIR/log.txt
-	if test "$RLS" = "hardy"; then
-		trickle -u $TRICKLE dput $DPUT_PSEUDO-intrepid ../cairo-dock-plug-ins_"$VERSION_PG"~"$RLS"_source.changes
-	elif test "$RLS" = "debian"; then
+	if test "$RLS" = "debian"; then
 		trickle -u $TRICKLE dput $DPUT_PSEUDO-jaunty ../cairo-dock-plug-ins_"$VERSION_DEB_PG"~"$RLS"_source.changes
+	elif test "$RLS" = "debian2"; then
+		trickle -u $TRICKLE dput $DPUT_PSEUDO-hardy ../cairo-dock-plug-ins_"$VERSION_DEB_PG"~"$RLS"_source.changes
 	else
 		trickle -u $TRICKLE dput $DPUT_PSEUDO-exp-$RLS ../cairo-dock-plug-ins_"$VERSION_PG"~"$RLS"_source.changes
 	fi
 	$TRAP_OFF
 done
 
-zenity --info --title=Cairo-Dock --text="Le script d'envoie des paquets est terminé"
+if [[ `ps aux | grep -e "[c]airo-dock -"` ]]; then
+	dbus-send --session --dest=org.cairodock.CairoDock /org/cairodock/CairoDock org.cairodock.CairoDock.ShowDialog string:"Le script d'envoie des paquets est terminé" int32:8 string:terminal string:any string:none
+else
+	zenity --info --title=Cairo-Dock --text="Le script d'envoie des paquets est terminé."
+fi
 echo -e "\n\t==== FIN ====" >> $DIR/log.txt
 
 exit

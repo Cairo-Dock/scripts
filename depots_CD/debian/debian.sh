@@ -5,7 +5,7 @@ Debian_Distrib="stable unstable"
 Architecture="i386 amd64 lpia"
 CD_key="41317877"
 
-debug_mv="cp"
+debug_mv="mv"
 
 
 ## Fonctions ##
@@ -67,24 +67,27 @@ paquets() {
 	dossiers
 
 	echo "Déplacement des paquets :"
-	debug_mv2="cp"
 	for distrib in $Debian_Distrib
 	do
+		if [ "$distrib" = "stable" ]; then
+			distrib2="debian2"
+		else
+			distrib2="debian"
+		fi
 		MainDir=dists/$distrib
 		PoolDir=$MainDir/pool
 		echo "\t$distrib"
 			# all
-		$debug_mv2 Incoming/cairo-dock/cairo-dock_*~debian_all.deb $PoolDir/all/cairo-dock
-		$debug_mv2 Incoming/cairo-dock/cairo-dock-data_*~debian_all.deb $PoolDir/all/cairo-dock
-		$debug_mv2 Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins-data_*~debian_all.deb $PoolDir/all/cairo-dock-plug-ins
+		$debug_mv Incoming/cairo-dock/cairo-dock_*~$distrib2*_all.deb $PoolDir/all/cairo-dock
+		$debug_mv Incoming/cairo-dock/cairo-dock-data_*~$distrib2*_all.deb $PoolDir/all/cairo-dock
+		$debug_mv Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins-data_*~$distrib2*_all.deb $PoolDir/all/cairo-dock-plug-ins
 		for archi in $Architecture
 		do
-			$debug_mv2 Incoming/cairo-dock/cairo-dock-core_*~debian_$archi.deb $PoolDir/$archi/cairo-dock
-			$debug_mv2 Incoming/cairo-dock/cairo-dock-dev_*~debian_$archi.deb $PoolDir/$archi/cairo-dock
-			$debug_mv2 Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins_*~debian_$archi.deb $PoolDir/$archi/cairo-dock-plug-ins
-			$debug_mv2 Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins-integration_*~debian_$archi.deb $PoolDir/$archi/cairo-dock-plug-ins
+			$debug_mv Incoming/cairo-dock/cairo-dock-core_*~$distrib2*_$archi.deb $PoolDir/$archi/cairo-dock
+			$debug_mv Incoming/cairo-dock/cairo-dock-dev_*~$distrib2*_$archi.deb $PoolDir/$archi/cairo-dock
+			$debug_mv Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins_*~$distrib2*_$archi.deb $PoolDir/$archi/cairo-dock-plug-ins
+			$debug_mv Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins-integration_*~$distrib2*_$archi.deb $PoolDir/$archi/cairo-dock-plug-ins
 		done
-		debug_mv2="$debug_mv"
 	done
 }
 

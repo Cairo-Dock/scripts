@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ARG1=$1
-Ubuntu_Distrib="hardy intrepid jaunty karmic"
+Ubuntu_Distrib="hardy intrepid jaunty karmic lucid"
 Architecture="i386 amd64 lpia"
 CD_key="41317877"
 
@@ -94,6 +94,10 @@ depot() {
 		MainDir=dists/$distrib
 		PoolDir=$MainDir/pool
 		case $distrib in
+			lucid)
+				Version_distrib="10.04"
+				Description_distrib="Ubuntu Lucid 10.04"
+				;;
 			karmic)
 				Version_distrib="9.10"
 				Description_distrib="Ubuntu Karmic 9.10"
