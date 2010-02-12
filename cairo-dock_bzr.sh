@@ -3,7 +3,7 @@
 # Script for BZR install for Cairo-Dock
 #
 # Copyright : (C) 2009 by Yann SLADEK
-# E-mail : mav@cairo-dock.org
+# E-mail : mav@glx-dock.org
 #
 #
 # This program is free software; you can redistribute it and/or
@@ -63,8 +63,8 @@ LOG_CAIRO_DOCK=$DIR/log.txt
 SCRIPT="cairo-dock_bzr.sh"
 SCRIPT_SAVE="cairo-dock_bzr.sh.save"
 SCRIPT_NEW="cairo-dock_bzr.sh.new"
-HOST="http://svn.cairo-dock.org"
-DOMAIN="cairo-dock.org"
+HOST="http://svn.glx-dock.org"
+DOMAIN="glx-dock.org"
 
 CAIRO_DOCK_CORE_LP_BRANCH="cairo-dock-core"
 CAIRO_DOCK_PLUG_INS_LP_BRANCH="cairo-dock-plug-ins"
@@ -572,13 +572,13 @@ check() {
 			else
 				echo "Some errors have been detected during the installation"
 				egrep -i "( error| Erreur)" $1
-				echo "Please keep a copy of the file 'log.txt' and report the bug on our forum (http://www.cairo-dock.org) on the section \"Version BZR\". Thanks ! "
+				echo "Please keep a copy of the file 'log.txt' and report the bug on our forum (http://www.glx-dock.org) on the section \"Version BZR\". Thanks ! "
 			fi
 			echo -e "$NORMAL"
 			if [[ `ps aux | grep -e "[c]airo-dock -"` ]]; then
 				dbus-send --session --dest=org.cairodock.CairoDock /org/cairodock/CairoDock org.cairodock.CairoDock.ShowDialog string:"Cairo-Dock: Erreur à la compilation
 Cairo-Dock: Compilation error
-	=> http://www.cairo-dock.org" int32:10 string:terminal string:any string:none
+	=> http://www.glx-dock.org" int32:10 string:terminal string:any string:none
 			else
 				zenity --info --title=Cairo-Dock --text="$LG_CLOSE"
 			fi
@@ -921,7 +921,7 @@ ppa_weekly() {
 
 about() {
 	echo "Author : Mav & Matttbe"
-	echo "Contact : mav@cairo-dock.org"
+	echo "Contact : mav@glx-dock.org"
 	exit
 }
 
