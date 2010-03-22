@@ -7,12 +7,11 @@ DIR_VERIF=`echo $DIR | grep -c /Paquets/`
 UBUNTU_CORE="lucid karmic jaunty intrepid hardy debian debian2"
 UBUNTU_PLUG_INS="lucid karmic jaunty intrepid hardy debian debian2"
 CL="debian/changelog"
-ARG_CONFIGURE="--enable-network-monitor --enable-scooby-do"
 DPUT_PSEUDO="matttbe"
 
 ### CHANGELOG ###
-CHANGELOG='\\n  * New Upstream Version (sync from BZR).'
-CHANGELOG_PLUG_INS='\\n  * New Upstream Version (sync from BZR).'
+CHANGELOG='\\n  * New Upstream Version (sync from BZR).\n  * debian/rules: cmake is now used'
+CHANGELOG_PLUG_INS='\\n  * New Upstream Version (sync from BZR).\n  * debian/rules:\n   - cmake is now used\n   - cdbs is now used'
 #CHANGELOG='\\n  * New Upstream Version (2.1.3-1).'
 #CHANGELOG_PLUG_INS='\\n  * New Upstream Version (2.1.3-1).\n  * debian/rules:\n   - Added RSS-Reader applet'
 
@@ -67,8 +66,8 @@ echo -e "$BLEU""PPA :""$NORMAL""
 if test "$ARG1" = ""; then
 	echo -e "$BLEU""\nExtras :""$NORMAL""
 \tSi le script est lancé avec '../.paquets-CD.sh -...' :
-\t\t-e : ./configure --prefix=/usr $ARG_CONFIGURE
-\t\t-f : pas de autoreconf ni ./configure"
+\t\t-f : pas de cmake
+\t\t-u : upload -> tarballs déjà extraits"
 fi
 
 if [ $DIR_VERIF -eq 0 ]; then
@@ -76,9 +75,9 @@ if [ $DIR_VERIF -eq 0 ]; then
 	exit 0
 fi
 
-NUMBER_RELEASE=`cat ../../cairo-dock-core/configure.ac | head -n5 | grep INIT | cut -d[ -f3 | cut -d] -f1` # 2.1.0-rc3
-NUMBER_RELEASE_PG=`cat ../../cairo-dock-plug-ins/configure.ac | head -n5 | grep INIT | cut -d[ -f3 | cut -d] -f1` # 2.1.0-rc3
-PLUG_INS=`cat ../../cairo-dock-plug-ins/configure.ac | head -n5 | grep INIT | cut -d[ -f2 | cut -d] -f1` # cairo-dock-plugins
+NUMBER_RELEASE=`head -n 15 ../../cairo-dock-core/CMakeLists.txt | grep "set (VERSION" | cut -d\" -f2 | cut -d\" -f1` # 2.1.0-rc3
+NUMBER_RELEASE_PG=`head -n 15 ../../cairo-dock-plug-ins/CMakeLists.txt | grep "set (VERSION" | cut -d\" -f2 | cut -d\" -f1` # 2.1.0-rc3
+PLUG_INS=`head -n 15 ../../cairo-dock-plug-ins/CMakeLists.txt | grep "project (" | cut -d\" -f2 | cut -d\" -f1` # cairo-dock-plugins
 
 echo -e "$VERT"
 
@@ -124,10 +123,9 @@ else
 	cd ../../cairo-dock-core/
 	trap "$TRAP_ON" DEBUG
 	if [ "$ARG1" = "-f" ]; then
-		echo -e "$ROUGE""no autoreconf + configure""$NORMAL"
+		echo -e "$ROUGE""no cmake""$NORMAL"
 	else
-		autoreconf -isvf >> $DIR/log.txt
-		./configure --prefix=/usr >> $DIR/log.txt
+		cmake CMakeLists.txt -DCMAKE_INSTALL_PREFIX=/usr >> $DIR/log.txt
 	fi
 	make dist >> $DIR/log.txt
 	$TRAP_OFF
@@ -145,14 +143,9 @@ else
 	fi
 	trap "$TRAP_ON" DEBUG
 	if [ "$ARG1" = "-f" ]; then
-		echo -e "$ROUGE""no autoreconf + configure""$NORMAL"
-	elif [ "$ARG1" = "-e" ]; then
-		echo -e "$ROUGE""./configure $ARG_CONFIGURE""$NORMAL"
-		autoreconf -isvf >> $DIR/log.txt
-		./configure --prefix=/usr $ARG_CONFIGURE >> $DIR/log.txt
+		echo -e "$ROUGE""no cmake""$NORMAL"
 	else
-		autoreconf -isvf >> $DIR/log.txt
-		./configure --prefix=/usr >> $DIR/log.txt
+		cmake CMakeLists.txt -DCMAKE_INSTALL_PREFIX=/usr >> $DIR/log.txt
 	fi
 	make dist >> $DIR/log.txt
 	$TRAP_OFF
@@ -166,10 +159,10 @@ fi
 ### PACKAGE NAME
 
 if [ "$VERSION" = "" ]; then
-	VERSION="$NUMBER_RELEASE-$date_AJD-0ubuntu1~ppa0"
-	VERSION_PG="$NUMBER_RELEASE_PG-$date_AJD-0ubuntu1~ppa0"
-	VERSION_DEB="$NUMBER_RELEASE-$date_AJD-1debian1~ppa0"
-	VERSION_DEB_PG="$NUMBER_RELEASE_PG-$date_AJD-1debian1~ppa0"
+	VERSION="$NUMBER_RELEASE-$date_AJD-0ubuntu1~ppa1"
+	VERSION_PG="$NUMBER_RELEASE_PG-$date_AJD-0ubuntu1~ppa1"
+	VERSION_DEB="$NUMBER_RELEASE-$date_AJD-1debian1~ppa1"
+	VERSION_DEB_PG="$NUMBER_RELEASE_PG-$date_AJD-1debian1~ppa1"
 elif [ "$VERSION" = "CD" ]; then
 	VERSION="$NUMBER_RELEASE-1ubuntu1"
 	VERSION_PG="$NUMBER_RELEASE_PG-1ubuntu1"
@@ -194,7 +187,7 @@ for RLS in $UBUNTU_CORE; do
 	fi
 	cp -r ../../../debian/$RLS/debian .
 	if test "$RLS" = "debian"; then
-		PAQUET="cairo-dock ($VERSION_DEB~$RLS) jaunty; urgency=low"
+		PAQUET="cairo-dock ($VERSION_DEB~$RLS) karmic; urgency=low"
 	elif test "$RLS" = "debian2"; then
 		PAQUET="cairo-dock ($VERSION_DEB~$RLS) hardy; urgency=low"
 	else
@@ -208,7 +201,7 @@ for RLS in $UBUNTU_CORE; do
 	trap "$TRAP_ON" DEBUG
 	debuild -S -sa >> $DIR/log.txt
 	if test "$RLS" = "debian"; then
-		trickle -u $TRICKLE dput $DPUT_PSEUDO-jaunty ../cairo-dock_"$VERSION_DEB"~"$RLS"_source.changes
+		trickle -u $TRICKLE dput $DPUT_PSEUDO-karmic ../cairo-dock_"$VERSION_DEB"~"$RLS"_source.changes
 	elif test "$RLS" = "debian2"; then
 		trickle -u $TRICKLE dput $DPUT_PSEUDO-hardy ../cairo-dock_"$VERSION_DEB"~"$RLS"_source.changes
 	else
@@ -235,7 +228,7 @@ for RLS in $UBUNTU_PLUG_INS; do
 	fi
 	cp -r ../../../debian/$RLS/plug-ins/debian .
 	if test "$RLS" = "debian"; then
-		PAQUET_PLUG_INS="cairo-dock-plug-ins ($VERSION_DEB_PG~$RLS) jaunty; urgency=low"
+		PAQUET_PLUG_INS="cairo-dock-plug-ins ($VERSION_DEB_PG~$RLS) karmic; urgency=low"
 	elif test "$RLS" = "debian2"; then
 		PAQUET_PLUG_INS="cairo-dock-plug-ins ($VERSION_DEB_PG~$RLS) hardy; urgency=low"
 	else
@@ -249,7 +242,7 @@ for RLS in $UBUNTU_PLUG_INS; do
 	trap "$TRAP_ON" DEBUG
 	debuild -S -sa >> $DIR/log.txt
 	if test "$RLS" = "debian"; then
-		trickle -u $TRICKLE dput $DPUT_PSEUDO-jaunty ../cairo-dock-plug-ins_"$VERSION_DEB_PG"~"$RLS"_source.changes
+		trickle -u $TRICKLE dput $DPUT_PSEUDO-karmic ../cairo-dock-plug-ins_"$VERSION_DEB_PG"~"$RLS"_source.changes
 	elif test "$RLS" = "debian2"; then
 		trickle -u $TRICKLE dput $DPUT_PSEUDO-hardy ../cairo-dock-plug-ins_"$VERSION_DEB_PG"~"$RLS"_source.changes
 	else

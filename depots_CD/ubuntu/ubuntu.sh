@@ -3,8 +3,9 @@
 ARG1=$1
 Ubuntu_Distrib="hardy intrepid jaunty karmic lucid"
 Architecture="i386 amd64 lpia"
+Arch_lucid="i386 amd64"
 CD_key="41317877"
-
+## LUCID => no LPIA
 debug_mv="cp"	# déplace les fichiers (mv) ou copier (cp)
 
 
@@ -27,7 +28,12 @@ dossiers() {
 		mkdir $PoolDir/all
 		mkdir $PoolDir/all/cairo-dock
 		mkdir $PoolDir/all/cairo-dock-plug-ins
-		for archi in $Architecture
+		if [ "$distrib" = "lucid" ]; then
+			Architecture2="$Arch_lucid"
+		else
+			Architecture2="$Architecture"
+		fi
+		for archi in $Architecture2
 		do
 			mkdir $PoolDir/$archi
 			mkdir $PoolDir/$archi/cairo-dock
@@ -74,12 +80,17 @@ paquets() {
 		echo "\n\t$distrib"
 			# all
 		$debug_mv Incoming/cairo-dock/cairo-dock_*~"$distrib"_all.deb $PoolDir/all/cairo-dock
+		$debug_mv Incoming/cairo-dock/cairo-dock-dev_*~"$distrib"_all.deb $PoolDir/all/cairo-dock
 		$debug_mv Incoming/cairo-dock/cairo-dock-data_*~"$distrib"_all.deb $PoolDir/all/cairo-dock
 		$debug_mv Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins-data_*~"$distrib"_all.deb $PoolDir/all/cairo-dock-plug-ins
-		for archi in $Architecture
+		if [ "$distrib" = "lucid" ]; then
+			Architecture2="$Arch_lucid"
+		else
+			Architecture2="$Architecture"
+		fi
+		for archi in $Architecture2
 		do
 			$debug_mv Incoming/cairo-dock/cairo-dock-core*~"$distrib"_$archi.deb $PoolDir/$archi/cairo-dock
-			$debug_mv Incoming/cairo-dock/cairo-dock-dev*~"$distrib"_$archi.deb $PoolDir/$archi/cairo-dock
 			$debug_mv Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins_*~"$distrib"_$archi.deb $PoolDir/$archi/cairo-dock-plug-ins
 			$debug_mv Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins-integration_*~"$distrib"_$archi.deb $PoolDir/$archi/cairo-dock-plug-ins
 		done
@@ -117,7 +128,12 @@ depot() {
 		esac
 		mkdir $MainDir/cairo-dock/
 	
-		for archi in $Architecture
+		if [ "$distrib" = "lucid" ]; then
+			Architecture2="$Arch_lucid"
+		else
+			Architecture2="$Architecture"
+		fi
+		for archi in $Architecture2
 		do
 			echo "\t\tArchitecture : $archi" 
 			Dir=$MainDir/cairo-dock/binary-$archi

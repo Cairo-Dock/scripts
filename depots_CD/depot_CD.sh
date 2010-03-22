@@ -20,8 +20,7 @@ echo -e "$BLEU""Disposition à avoir pour lancer le script:""$NORMAL""
 \t|-----|-Incoming
 \t|-----|-----|-cairo-dock
 \t|-----|-----|-cairo-dock-plug-ins
-\n* ""$ROUGE""Les paquets deb doivent avoir été téléchargés ! ""$NORMAL""
-\n* ""$ROUGE""Les paquets plug-ins pour Ubuntu Hardy seront copiés automatiquement du dossier de Debian"
+\n* ""$ROUGE""Les paquets deb doivent avoir été téléchargés ! ""$NORMAL"
 echo -e "$VERT""Continuer ? [O/n]""$NORMAL"
 read continuer
 if test "$continuer" = "n" -o  "$continuer" = "N"; then

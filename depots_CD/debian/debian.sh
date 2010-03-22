@@ -5,7 +5,7 @@ Debian_Distrib="stable unstable"
 Architecture="i386 amd64 lpia"
 CD_key="41317877"
 
-debug_mv="mv"
+debug_mv="cp"
 
 
 ## Fonctions ##
@@ -79,12 +79,12 @@ paquets() {
 		echo "\t$distrib"
 			# all
 		$debug_mv Incoming/cairo-dock/cairo-dock_*~$distrib2*_all.deb $PoolDir/all/cairo-dock
+		$debug_mv Incoming/cairo-dock/cairo-dock-dev_*~$distrib2*_all.deb $PoolDir/all/cairo-dock
 		$debug_mv Incoming/cairo-dock/cairo-dock-data_*~$distrib2*_all.deb $PoolDir/all/cairo-dock
 		$debug_mv Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins-data_*~$distrib2*_all.deb $PoolDir/all/cairo-dock-plug-ins
 		for archi in $Architecture
 		do
 			$debug_mv Incoming/cairo-dock/cairo-dock-core_*~$distrib2*_$archi.deb $PoolDir/$archi/cairo-dock
-			$debug_mv Incoming/cairo-dock/cairo-dock-dev_*~$distrib2*_$archi.deb $PoolDir/$archi/cairo-dock
 			$debug_mv Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins_*~$distrib2*_$archi.deb $PoolDir/$archi/cairo-dock-plug-ins
 			$debug_mv Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins-integration_*~$distrib2*_$archi.deb $PoolDir/$archi/cairo-dock-plug-ins
 		done

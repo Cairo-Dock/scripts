@@ -19,6 +19,9 @@
 
 
 #Changelog
+# 22/03/10 : 	matttbe : passage à cmake
+# 22/01/10 : 	matttbe : pg-extras -> liens symboliques
+# 10/02/10 : 	matttbe : changement pour le nouveau nom de domaine glx-dock.org
 # 22/01/10 : 	matttbe : changement pour DBus applets + traduction
 # 08/11/09 : 	matttbe : Prise en charge de Lucid + applets third-party
 # 25/10/09 : 	matttbe : ajout de RSSreader + scooby-do + envoie des info via ShowDialog
@@ -63,7 +66,7 @@ LOG_CAIRO_DOCK=$DIR/log.txt
 SCRIPT="cairo-dock_bzr.sh"
 SCRIPT_SAVE="cairo-dock_bzr.sh.save"
 SCRIPT_NEW="cairo-dock_bzr.sh.new"
-HOST="http://svn.glx-dock.org"
+HOST="http://bzr.glx-dock.org"
 DOMAIN="glx-dock.org"
 
 CAIRO_DOCK_CORE_LP_BRANCH="cairo-dock-core"
@@ -80,7 +83,7 @@ PLUGINS_GNOME="gnome-integration"
 PLUGINS_GNOME_OLD="gnome-integration-old"
 PLUGINS_XFCE="xfce-integration"
 
-NEEDED="bzr libtool build-essential automake1.9 autoconf m4 autotools-dev pkg-config zenity intltool gettext libcairo2-dev libgtk2.0-dev librsvg2-dev libdbus-glib-1-dev libgnomeui-dev libvte-dev libxxf86vm-dev libx11-dev libalsa-ocaml-dev libasound2-dev libxtst-dev libgnome-menu-dev libgtkglext1-dev freeglut3-dev glutg3-dev libetpan-dev libwebkit-dev libexif-dev curl "
+NEEDED="bzr libtool build-essential pkg-config zenity intltool gettext libcairo2-dev libgtk2.0-dev librsvg2-dev libdbus-glib-1-dev libgnomeui-dev libvte-dev libxxf86vm-dev libx11-dev libalsa-ocaml-dev libasound2-dev libxtst-dev libgnome-menu-dev libgtkglext1-dev freeglut3-dev glutg3-dev libetpan-dev libwebkit-dev libexif-dev curl libglib2.0-dev cmake "
 NEEDED_XFCE="libthunar-vfs-1-dev"
 NEEDED_GNOME="libgnomevfs2-dev"
 NEEDED_KARMIC="libxklavier-dev"
@@ -93,7 +96,7 @@ ERROR=0
 FULL_COMPILE=0
 DISTRIB=""
 INSTALL_CAIRO_DOCK_OK=1
-CONFIGURE="--enable-network-monitor --enable-rssreader --enable-scooby-do"
+CONFIGURE="-Denable-network-monitor=yes -Denable-doncky=yes -Denable-scooby-do=yes"
 
 if test -e "$DIR/.bzr_dl"; then
 	BZR_DL_MODE=`cat $DIR/.bzr_dl`
@@ -145,7 +148,7 @@ install_cairo_dock() {
 install_cairo() {
 	cd $DIR/$CAIRO_DOCK_CORE_LP_BRANCH
 
-	autoreconf -isvf && ./configure --prefix=/usr && make clean && make -j $(grep -c ^processor /proc/cpuinfo)
+	cmake CMakeLists.txt -DCMAKE_INSTALL_PREFIX=/usr && make clean && make -j $(grep -c ^processor /proc/cpuinfo)
 
 	if [ $? -ne 0 ]; then
 		return 1
@@ -183,7 +186,7 @@ install_plugins() {
 	cd $DIR/$CAIRO_DOCK_PLUG_INS_LP_BRANCH
 	echo $(pwd)
 
-	autoreconf -isvf && ./configure --prefix=/usr $CONFIGURE && make clean && make -j $(grep -c ^processor /proc/cpuinfo)
+	cmake CMakeLists.txt -DCMAKE_INSTALL_PREFIX=/usr $CONFIGURE && make clean && make -j $(grep -c ^processor /proc/cpuinfo)
 	
 	if [ $? -ne 0 ]; then
 		return 1
@@ -206,8 +209,9 @@ install_cairo_dock_plugins_extras() {
 		rm -rf $CAIRO_DOCK_PLUG_INS_EXTRAS_HOME/$i # on vire ceux que l'on va remplacer
 	done
 
-	cp -R $DIR/$CAIRO_DOCK_PLUG_INS_EXTRAS_LP_BRANCH/* $CAIRO_DOCK_PLUG_INS_EXTRAS_HOME/ >> $LOG_CAIRO_DOCK 2>&1
-	rm -rf $CAIRO_DOCK_PLUG_INS_EXTRAS_HOME/.bzr $CAIRO_DOCK_PLUG_INS_EXTRAS_HOME/demos
+	for i in `ls --hide=DOWNLOAD --hide=demos $DIR/$CAIRO_DOCK_PLUG_INS_EXTRAS_LP_BRANCH`;do
+		ln -s $DIR/$CAIRO_DOCK_PLUG_INS_EXTRAS_LP_BRANCH/$i $CAIRO_DOCK_PLUG_INS_EXTRAS_HOME/$i # liens symboliques
+	done
 
 	if [ $? -ne 0 ]; then
 		ERROR+=1
@@ -567,11 +571,11 @@ check() {
 			echo -e "$ROUGE"
 			if [ $LG -eq 0 ]; then
 				echo "Des erreurs ont été détéctées lors de l'installation."
-				egrep -i "( error| Erreur)" $1
+				egrep -i "( error| Erreur)" $1 | grep -v error.svg
 				echo "Veuillez consulter le fichier log.txt pour plus d'informations et vous rendre sur le forum de cairo-dock pour reporter l'erreur dans la section \"Version BZR\" "
 			else
 				echo "Some errors have been detected during the installation"
-				egrep -i "( error| Erreur)" $1
+				egrep -i "( error| Erreur)" $1 | grep -v error.svg
 				echo "Please keep a copy of the file 'log.txt' and report the bug on our forum (http://www.glx-dock.org) on the section \"Version BZR\". Thanks ! "
 			fi
 			echo -e "$NORMAL"
@@ -943,7 +947,7 @@ elif [ "$1" = "-e" ]; then # possibilité d'ajouter des args
 	else
 		for arg in $ARGS
 		do
-			CONFIGURE="$CONFIGURE --enable-$arg"
+			CONFIGURE="$CONFIGURE -Denable-$arg=yes"
 		done
 	fi
 	rm -f $DIR/.args
@@ -959,9 +963,9 @@ else
 fi
 
 if [ $DEBUG -ne 1 ]; then
-	if [ `date +%Y%m%d` -gt 20100205 ];then
+	# if [ `date +%Y%m%d` -gt 20100220 ];then
 		check_new_script
-	fi
+	# fi
 fi
 
 if [ $LG -eq 0 ]; then
