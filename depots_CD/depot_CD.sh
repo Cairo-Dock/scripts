@@ -12,7 +12,7 @@ elif ! test -d ubuntu; then
 fi
 
 echo -e "$BLEU""Disposition à avoir pour lancer le script:""$NORMAL""
-\t|-debian
+\t|-(debian)
 \t|-----|-Incoming
 \t|-----|-----|-cairo-dock
 \t|-----|-----|-cairo-dock-plug-ins
@@ -29,7 +29,8 @@ fi
 
 echo -e "$BLEU""\tDépot Debian\n""$NORMAL"
 	cd debian/
-	./debian.sh -p
+	echo -e "$ROUGE""Sans debian...""$NORMAL"
+	#./debian.sh -p
 
 echo -e "$BLEU""\tDépot Ubuntu\n""$NORMAL"
 	cd ../ubuntu/

@@ -2,8 +2,9 @@
 
 # Script for BZR install for Cairo-Dock
 #
-# Copyright : (C) 2009 by Yann SLADEK
-# E-mail : mav@glx-dock.org
+# Copyright : (C) 2008-2009 by Yann SLADEK
+#                 2009-2012 by Matthieu BAERTS
+# E-mail : mav@glx-dock.org, matttbe@glx-dock.org
 #
 #
 # This program is free software; you can redistribute it and/or
@@ -18,7 +19,52 @@
 # http://www.gnu.org/licenses/licenses.html#GPL
 
 
-#Changelog
+## Changelog
+# 16/03/13 : 	matttbe : Added libgnome-menu-3-dev
+# 16/11/12 : 	matttbe : Modified all updated CMake flags
+# 05/11/12 : 	matttbe : Detection of Gnome + fixed dependences for installations before oneiric (with GTK2)
+# 27/08/12 : 	matttbe : Display the output of 'install_applet.sh' if there is a question
+# 18/07/12 : 	matttbe : Added -Denable-desktop-manager=yes for Debian
+# 15/04/12 : 	matttbe : Fixed ShowDialog
+# 06/04/12 : 	matttbe : Prise en charge de precise pour la désinstallation de paquets + accélération de cette opération
+# 02/01/12 : 	matttbe : Retrait de NEEDED_GNOME et XFCE pour après lucid.
+# 02/01/12 : 	matttbe : Ajout de -Denable-global-menu=yes
+# 22/12/11 : 	matttbe : Ajout de libwebkitgtk-3.0-dev et libvte-2.90-dev pour GTK3 (oneiric et +)
+# 20/12/11 : 	matttbe : Ajout de -Denable-application-menu=yes pour Natty et + (part 2)
+# 19/12/11 : 	matttbe : Ajout de -Denable-application-menu=yes pour Natty et +
+# 04/12/11 : 	matttbe : Ajout de libindicator3-dev pour Oneiric et +
+# 02/12/11 : 	matttbe : Ajout de libido3-0.1-dev pour Oneiric et +
+# 01/12/11 : 	matttbe : Ajout de libgtk-3-dev et libdbusmenu-gtk3-dev pour Oneiric et +
+# 09/09/11 : 	matttbe : Ajout de -Denable-desktop-manager=yes pour Natty et + pour lancer une session sans Unity
+# 01/09/11 : 	matttbe : retrait de -Denable-impulse (plus nécessaire) + -r => -R
+# 30/08/11 : 	matttbe : Ajout de -i, -r, -u pour un install, reinstall, update sans passer par le menu
+# 26/08/11 : 	matttbe : Retrait de libglut et impulse est maintenant stable
+# 31/07/11 : 	matttbe : Ajout de libupower-glib-dev
+# 30/07/11 : 	matttbe : ajout d'un check en cas de problème au make install
+# 16/07/11 : 	matttbe : installation des paquets en 1 coup + déinstallation de tous les paquets de CD
+# 13/07/11 : 	matttbe : retrait du weekly debian
+# 30/06/11 : 	matttbe : Ajout d'Impulse + dépendances (libpulse-dev & libfftw3-dev)
+# 20/06/11 : 	matttbe : Suppression des fichiers installés par le core avant le make install
+# 26/05/11 : 	matttbe : Retrait des flags non utilisés
+# 24/02/11 : 	matttbe : Ajout de -DWITH_VALA=yes pour >= natty
+# 24/02/11 : 	matttbe : Ajout de -DWITH_VALA=no pour <= lucid
+# 28/01/11 : 	matttbe : Ajout de -DENABLE_GTK_GRIP=1 pour >= natty
+# 18/01/11 : 	matttbe : Ajout de libwebkitgtk-dev pour >= natty
+# 07/01/11 : 	matttbe : Ajout de python valac mono-gmcs ruby libglib2.0-cil-dev libndesk-dbus1.0-cil-dev libndesk-dbus-glib1.0-cil-dev
+# 17/11/10 : 	matttbe : Ajout de enable-recent-events + libzeitgeist-dev
+# 27/10/10 : 	matttbe : Ajout de enable-disks + removed remote_control
+# 02/10/10 : 	matttbe : Ajout de libsensors4-dev
+# 16/09/10 : 	matttbe : Ajout de enable_remote_control
+# 07/09/10 : 	matttbe : Recompilation de Cairo-Desklet si changements dans l'API
+# 24/06/10 : 	matttbe : Ajout d'une option "--no-exit" pour ne pas fermer le terminal
+# 20/06/10 : 	matttbe : On efface les anciens caches de cmake car on a changé de dossier => à VIRER dans qqs jours !!!
+# 19/06/10 : 	matttbe : Ajout de cairo-desklet + afficher la version installée
+# 18/06/10 : 	matttbe : compilation dans un dossier build.
+# 30/05/10 : 	matttbe : fix pour le script de smo (par smo) + oubli d'une boucle pour needed_a_karmic
+# 18/05/10 : 	matttbe : Ajout de MeMenu + Status notifer
+# 09/05/10 : 	matttbe : Ajout de libical-dev
+# 09/04/10 : 	matttbe : suppression des dossiers data et lib en cas de changements de noms de lib ou de fichiers pour les plug-ins
+# 25/03/10 : 	matttbe : libcurl4-dev + dépendances des plug-ins extras
 # 22/03/10 : 	matttbe : passage à cmake
 # 22/01/10 : 	matttbe : pg-extras -> liens symboliques
 # 10/02/10 : 	matttbe : changement pour le nouveau nom de domaine glx-dock.org
@@ -60,13 +106,13 @@
 # 12/02/08 : 	Ajout de la fonction de desinstallation de Glitz
 #				Modification de la fonction de vérification des erreurs lors de l'install
 
-DEBUG=0 # Attention, ne pas oublier de modifier !!!
+DEBUG=0 # Attention, ne pas oublier de modifier !!! => à 0
 DIR=$(pwd)
 LOG_CAIRO_DOCK=$DIR/log.txt
 SCRIPT="cairo-dock_bzr.sh"
 SCRIPT_SAVE="cairo-dock_bzr.sh.save"
 SCRIPT_NEW="cairo-dock_bzr.sh.new"
-HOST="http://bzr.glx-dock.org"
+HOST="http://download.tuxfamily.org/glxdock/scripts/"
 DOMAIN="glx-dock.org"
 
 CAIRO_DOCK_CORE_LP_BRANCH="cairo-dock-core"
@@ -74,6 +120,8 @@ CAIRO_DOCK_PLUG_INS_LP_BRANCH="cairo-dock-plug-ins"
 CAIRO_DOCK_PLUG_INS_EXTRAS_LP_BRANCH="cairo-dock-plug-ins-extras"
 CAIRO_DOCK_PLUG_INS_EXTRAS_USR="/usr/share/cairo-dock/plug-ins/Dbus/third-party"
 CAIRO_DOCK_PLUG_INS_EXTRAS_HOME="$HOME/.config/cairo-dock/third-party"
+CAIRO_DESKLET_LP_BRANCH="cairo-desklet"
+BUILD_DIR="build"
 
 #unset SSH_AUTH_SOCK # Evite de devoir retaper le passphrase
 # ssh-add
@@ -83,11 +131,18 @@ PLUGINS_GNOME="gnome-integration"
 PLUGINS_GNOME_OLD="gnome-integration-old"
 PLUGINS_XFCE="xfce-integration"
 
-NEEDED="bzr libtool build-essential pkg-config zenity intltool gettext libcairo2-dev libgtk2.0-dev librsvg2-dev libdbus-glib-1-dev libgnomeui-dev libvte-dev libxxf86vm-dev libx11-dev libalsa-ocaml-dev libasound2-dev libxtst-dev libgnome-menu-dev libgtkglext1-dev freeglut3-dev glutg3-dev libetpan-dev libwebkit-dev libexif-dev curl libglib2.0-dev cmake "
+NEEDED_THIRD_PARTY="python valac ruby"
+NEEDED_THIRD_PARTY_A_KARMIC="mono-gmcs libglib2.0-cil-dev libndesk-dbus1.0-cil-dev libndesk-dbus-glib1.0-cil-dev"
+NEEDED="bzr build-essential pkg-config zenity gettext libcairo2-dev librsvg2-dev libdbus-glib-1-dev libgnomeui-dev libxxf86vm-dev x11proto-xf86vidmode-dev libxinerama-dev libxrender-dev libasound2-dev libxtst-dev libetpan-dev libexif-dev curl libglib2.0-dev cmake libcurl4-gnutls-dev libical-dev ddd libsensors4-dev libpulse-dev $NEEDED_THIRD_PARTY "
 NEEDED_XFCE="libthunar-vfs-1-dev"
 NEEDED_GNOME="libgnomevfs2-dev"
+NEEDED_A_KARMIC="libxklavier-dev libdbusmenu-glib-dev libupower-glib-dev $NEEDED_THIRD_PARTY_A_KARMIC"
 NEEDED_KARMIC="libxklavier-dev"
 NEEDED_B_KARMIC="libxklavier12-dev"
+NEEDED_A_LUCID="libzeitgeist-dev"
+NEEDED_B_NATTY="libwebkit-dev"
+NEEDED_A_NATTY="libgtk-3-dev libgl1-mesa-dev libglu1-mesa-dev libpango1.0-dev libdbusmenu-gtk3-dev libido3-0.1-dev libindicator3-dev libwebkitgtk-3.0-dev libvte-2.90-dev libgnome-menu-3-dev" # GTK3
+NEEDED_B_ONEIRIC="libgtk2.0-dev libgtkglext1-dev libdbusmenu-gtk-dev libido-0.1-dev libindicator-dev libwebkitgtk-dev libvte-dev libgnome-menu-dev" # GTK2
 
 UPDATE=0
 UPDATE_PLUG_INS=0
@@ -96,7 +151,7 @@ ERROR=0
 FULL_COMPILE=0
 DISTRIB=""
 INSTALL_CAIRO_DOCK_OK=1
-CONFIGURE="-Denable-network-monitor=yes -Denable-doncky=yes -Denable-scooby-do=yes"
+CONFIGURE="-Denable-network-monitor=ON -Denable-doncky=ON -Denable-scooby-do=ON -Denable-disks=ON -Denable-global-menu=ON"
 
 if test -e "$DIR/.bzr_dl"; then
 	BZR_DL_MODE=`cat $DIR/.bzr_dl`
@@ -107,6 +162,7 @@ fi
 BZR_REV_FILE_CORE="$DIR/.bzr_core"
 BZR_REV_FILE_PLUG_INS="$DIR/.bzr_plug_ins"
 BZR_REV_FILE_PLUG_INS_EXTRAS="$DIR/.bzr_plug_ins_extras"
+BZR_REV_FILE_DESKLET="$DIR/.bzr_desklet"
 
 TRAP_ON='echo -e "\e]0;$BASH_COMMAND\007"' # Afficher la commande en cours dans le terminal
 TRAP_OFF="trap DEBUG"
@@ -148,14 +204,32 @@ install_cairo_dock() {
 install_cairo() {
 	cd $DIR/$CAIRO_DOCK_CORE_LP_BRANCH
 
-	cmake CMakeLists.txt -DCMAKE_INSTALL_PREFIX=/usr && make clean && make -j $(grep -c ^processor /proc/cpuinfo)
+	rm -rf $BUILD_DIR
+	mkdir $BUILD_DIR
+	cd $BUILD_DIR
+
+	if test `lsb_release -rs | cut -d. -f1` -ge 11 -o `grep -c ^"Linux Mint" /etc/issue` -eq 1; then # natty or newer
+		CONFIGURE_CORE="$CONFIGURE_CORE -Ddisable-gtk-grip=ON -Denable-desktop-manager=ON"
+	elif test `grep -c ^Debian /etc/issue` -eq 1; then
+		CONFIGURE_CORE="$CONFIGURE_CORE -Denable-desktop-manager=ON"
+	fi
+
+	cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Debug $CONFIGURE_CORE && make clean && make -j $(grep -c ^processor /proc/cpuinfo)
 
 	if [ $? -ne 0 ]; then
+		cd $DIR
 		return 1
 	fi
 
+	sudo rm -rf /usr/include/cairo-dock/* /usr/lib/libgldi.so*
+	sudo rm -rf /usr/share/cairo-dock/*
+	cd $DIR/$CAIRO_DOCK_CORE_LP_BRANCH/$BUILD_DIR
 	sudo make install
-	cd ..
+	if [ $? -ne 0 ]; then
+		cd $DIR
+		return 1
+	fi
+	cd $DIR
 }
 
 
@@ -185,43 +259,93 @@ install_plugins() {
 
 	cd $DIR/$CAIRO_DOCK_PLUG_INS_LP_BRANCH
 	echo $(pwd)
+	
+	
+	rm -rf $BUILD_DIR
+#	find -name "CMakeFiles" -exec rm -rf '{}' \; # virer les anciens caches => à effacer à l'avenir
+#	find -name "*.cmake" -delete # à virer
+#	rm -f CMakeCache.txt # à virer
+#	find -name "Makefile" -delete # à virer
+	mkdir $BUILD_DIR
+	cd $BUILD_DIR
 
-	cmake CMakeLists.txt -DCMAKE_INSTALL_PREFIX=/usr $CONFIGURE && make clean && make -j $(grep -c ^processor /proc/cpuinfo)
+	echo "cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Debug $CONFIGURE && make clean && make -j $(grep -c ^processor /proc/cpuinfo)" > BUILD.sh
+	cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Debug $CONFIGURE && make clean && make -j $(grep -c ^processor /proc/cpuinfo)
 	
 	if [ $? -ne 0 ]; then
+		cd $DIR
 		return 1
 	fi
 
+	sudo rm -rf /usr/lib/cairo-dock/* /usr/share/cairo-dock/plug-ins/* # en cas de changements de noms de lib ou de fichiers
+	cd $DIR/$CAIRO_DOCK_PLUG_INS_LP_BRANCH/$BUILD_DIR
 	sudo make install
-	cd ..
+	if [ $? -ne 0 ]; then
+		cd $DIR
+		return 1
+	fi
+	cd $DIR
 }
 
 
 install_cairo_dock_plugins_extras() {
 	echo -e "$BLEU""Installation : Plug-ins Extras"
 
+	cd $DIR/$CAIRO_DOCK_PLUG_INS_EXTRAS_LP_BRANCH
+		echo -e "\tCheck dependences"
+	sh dependences_deb.sh >> $LOG_CAIRO_DOCK
+	if [ $? -ne 0 ]; then
+		ERROR+=1
+	fi
+
 	echo "Installation des Plug-ins Extras du `date`" >> $LOG_CAIRO_DOCK
 	echo "" >> $LOG_CAIRO_DOCK
 	
-	mkdir -p $CAIRO_DOCK_PLUG_INS_EXTRAS_HOME # ça ne coute rien -> dossiers parents
+	./install_applet.sh
 
-	for i in `ls $DIR/$CAIRO_DOCK_PLUG_INS_EXTRAS_LP_BRANCH`;do
-		rm -rf $CAIRO_DOCK_PLUG_INS_EXTRAS_HOME/$i # on vire ceux que l'on va remplacer
-	done
+	cd $DIR
 
-	for i in `ls --hide=DOWNLOAD --hide=demos $DIR/$CAIRO_DOCK_PLUG_INS_EXTRAS_LP_BRANCH`;do
-		ln -s $DIR/$CAIRO_DOCK_PLUG_INS_EXTRAS_LP_BRANCH/$i $CAIRO_DOCK_PLUG_INS_EXTRAS_HOME/$i # liens symboliques
-	done
+	echo -e "$NORMAL"
+	echo "" >> $LOG_CAIRO_DOCK
+}
+
+
+install_cairo_desklet() {
+
+	echo "Installation de Cairo-Desklet" >> $LOG_CAIRO_DOCK
+
+	echo "" >> $LOG_CAIRO_DOCK
+	echo -e "$BLEU""Installation : Cairo-Desklet"
+
+	install_desklet >> $LOG_CAIRO_DOCK 2>&1
 
 	if [ $? -ne 0 ]; then
 		ERROR+=1
 		echo -e "$ROUGE""\tError"
+		check $LOG_CAIRO_DOCK "CD"
 	else
 		echo -e "$VERT""\tSuccessfully Installed !"
 	fi
 
 	echo -e "$NORMAL"
 	echo "" >> $LOG_CAIRO_DOCK
+
+}
+
+install_desklet() {
+	cd $DIR/$CAIRO_DESKLET_LP_BRANCH
+
+	rm -rf $BUILD_DIR
+	mkdir $BUILD_DIR
+	cd $BUILD_DIR
+	cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Debug && make clean && make -j $(grep -c ^processor /proc/cpuinfo)
+
+	if [ $? -ne 0 ]; then
+		return 1
+	fi
+
+	sudo make install
+	cd ../..
 }
 
 
@@ -297,6 +421,7 @@ install(){
 		bzr $BZR_DL lp:$CAIRO_DOCK_CORE_LP_BRANCH 
 		if [ $? -ne 0 ]; then
 			echo -e "$ROUGE""$LG_DL_ERROR"
+			read
 			exit
 		else
 			NEW_CORE_VERSION=`bzr revno -q $CAIRO_DOCK_CORE_LP_BRANCH`
@@ -313,6 +438,7 @@ install(){
 		bzr $BZR_DL lp:$CAIRO_DOCK_PLUG_INS_LP_BRANCH 
 		if [ $? -ne 0 ]; then
 			echo -e "$ROUGE""$LG_DL_ERROR"
+			read
 			exit
 		else
 			NEW_PLUG_INS_VERSION=`bzr revno -q $CAIRO_DOCK_PLUG_INS_LP_BRANCH`
@@ -329,12 +455,30 @@ install(){
 		bzr $BZR_DL lp:$CAIRO_DOCK_PLUG_INS_EXTRAS_LP_BRANCH
 		if [ $? -ne 0 ]; then
 			echo -e "$ROUGE""$LG_DL_ERROR"
+			read
 			exit
 		else
 			NEW_PLUG_INS_EXTRAS_VERSION=`bzr revno -q $CAIRO_DOCK_PLUG_INS_EXTRAS_LP_BRANCH`
 			echo $NEW_PLUG_INS_EXTRAS_VERSION > $BZR_REV_FILE_PLUG_INS_EXTRAS
 			echo -e "\nCairo-Dock-Plug-ins-Extras : rev $NEW_PLUG_INS_EXTRAS_VERSION \n"
 			echo -e "\nCairo-Dock-Plug-ins-Extras : rev $NEW_PLUG_INS_EXTRAS_VERSION \n" >> $LOG_CAIRO_DOCK
+		fi
+	fi
+
+	echo -e "$NORMAL" ## CAIRO-DESKLET ##
+
+	if [ ! -d $DIR/$CAIRO_DESKLET_LP_BRANCH ]; then
+		echo -e "$BLEU""$LG_DL_BG Desklets"
+		bzr $BZR_DL lp:$CAIRO_DESKLET_LP_BRANCH
+		if [ $? -ne 0 ]; then
+			echo -e "$ROUGE""$LG_DL_ERROR"
+			read
+			exit
+		else
+			NEW_DESKLET_VERSION=`bzr revno -q $CAIRO_DESKLET_LP_BRANCH`
+			echo $NEW_DESKLET_VERSION > $BZR_REV_FILE_DESKLET
+			echo -e "\nCairo-Desklets : rev $NEW_DESKLET_VERSION \n"
+			echo -e "\nCairo-Desklets : rev $NEW_DESKLET_VERSION \n" >> $LOG_CAIRO_DOCK
 		fi
 	fi
 
@@ -350,6 +494,8 @@ install(){
 
 	install_cairo_dock_plugins_extras
 
+	install_cairo_desklet
+
 	check $LOG_CAIRO_DOCK "CD"
 }
 
@@ -363,6 +509,8 @@ reinstall(){
 
 	install_cairo_dock_plugins_extras
 
+	install_cairo_desklet
+
 	check $LOG_CAIRO_DOCK "CD"
 }
 
@@ -374,17 +522,31 @@ reinstall(){
 
 
 uninstall() {
-	echo "Désinstallation de Cairo-Dock et des plug-ins"
+	echo "Uninstallation of Cairo-Dock and its plug-ins"
 
-	cd $DIR/$CAIRO_DOCK_CORE_LP_BRANCH
+	# Core
+	cd $DIR/$CAIRO_DOCK_CORE_LP_BRANCH/$BUILD_DIR
 	sudo make uninstall > $LOG_CAIRO_DOCK 2>&1
 	cd ..
-
-	cd $DIR/$CAIRO_DOCK_PLUG_INS_LP_BRANCH
-	sudo make uninstall >> $LOG_CAIRO_DOCK 2>&1
+	rm -rf $BUILD_DIR
 	cd ..
 
+	# Plug-ins
+	cd $DIR/$CAIRO_DOCK_PLUG_INS_LP_BRANCH/$BUILD_DIR
+	sudo make uninstall >> $LOG_CAIRO_DOCK 2>&1
+	cd ..
+	rm -rf $BUILD_DIR
+	cd ..
+
+	# Extras
 	sudo rm -r $CAIRO_DOCK_PLUG_INS_EXTRAS_USR
+
+	# Desklet
+	cd $DIR/$CAIRO_DESKLET_LP_BRANCH/$BUILD_DIR
+	sudo make uninstall >> $LOG_CAIRO_DOCK 2>&1
+	cd ..
+	rm -rf $BUILD_DIR
+	cd ..
 
 	if [ -e /usr/share/applications/cairo-dock_svn.desktop ]; then
 		sudo rm -f /usr/share/applications/cairo-dock_svn.desktop
@@ -424,7 +586,6 @@ update(){
 		BZR_UP="pull"
 		bzr $BZR_UP lp:$CAIRO_DOCK_CORE_LP_BRANCH
 		NEW_CORE_VERSION=`bzr revno -q`
-		bzr log -l1 --line
 		cd $DIR/
 	else
 		BZR_UP="update -q"
@@ -439,7 +600,13 @@ update(){
 	echo -e "\nCairo-Dock-Core : rev $ACTUAL_CORE_VERSION -> $NEW_CORE_VERSION \n" >> $LOG_CAIRO_DOCK
 
 	if [ $ACTUAL_CORE_VERSION -ne $NEW_CORE_VERSION ]; then
-		echo -e "$VERT""$LG_UP_FOUND Cairo-Dock"
+		DIFF_CORE_VERSION=$(($NEW_CORE_VERSION-$ACTUAL_CORE_VERSION))
+		if [ $DIFF_CORE_VERSION -le 10 ]; then
+			bzr log -l$DIFF_CORE_VERSION --line $CAIRO_DOCK_CORE_LP_BRANCH
+		else
+			bzr log -l1 --line $CAIRO_DOCK_CORE_LP_BRANCH
+		fi
+		echo -e "$VERT""\n$LG_UP_FOUND Cairo-Dock"
 		sleep 1
 		install_cairo_dock
 		UPDATE_CAIRO_DOCK=1
@@ -452,7 +619,7 @@ update(){
 
 	## PLUG-INS ##
 
-	echo -e "$BLEU""$LG_SEARCH_FOR Plug-ins"
+	echo -e "$BLEU""\n$LG_SEARCH_FOR Plug-ins"
 	if test -e "$BZR_REV_FILE_PLUG_INS"; then
 		ACTUAL_PLUG_INS_VERSION=`cat "$BZR_REV_FILE_PLUG_INS"`
 	else
@@ -464,7 +631,6 @@ update(){
 		cd $DIR/$CAIRO_DOCK_PLUG_INS_LP_BRANCH
 		bzr $BZR_UP lp:$CAIRO_DOCK_PLUG_INS_LP_BRANCH
 		NEW_PLUG_INS_VERSION=`bzr revno -q`
-		bzr log -l1 --line
 		cd $DIR/
 	else
 		NEW_PLUG_INS_VERSION=`bzr revno -q $CAIRO_DOCK_PLUG_INS_LP_BRANCH`
@@ -478,7 +644,13 @@ update(){
 	echo -e "\nCairo-Dock-Plug-Ins : rev $ACTUAL_PLUG_INS_VERSION -> $NEW_PLUG_INS_VERSION \n" >> $LOG_CAIRO_DOCK
 
 	if [ $ACTUAL_PLUG_INS_VERSION -ne $NEW_PLUG_INS_VERSION ]; then
-		echo -e "$VERT""$LG_UP_FOUND Plug-Ins"
+		DIFF_PLUG_INS_VERSION=$(($NEW_PLUG_INS_VERSION-$ACTUAL_PLUG_INS_VERSION))
+		if [ $DIFF_PLUG_INS_VERSION -le 10 ]; then
+			bzr log -l$DIFF_PLUG_INS_VERSION --line $CAIRO_DOCK_PLUG_INS_LP_BRANCH
+		else
+			bzr log -l1 --line $CAIRO_DOCK_PLUG_INS_LP_BRANCH
+		fi
+		echo -e "$VERT""\n$LG_UP_FOUND Plug-Ins"
 		install_cairo_dock_plugins
 		UPDATE=1
 	elif [ $UPDATE_CAIRO_DOCK -eq 1 ]; then
@@ -493,7 +665,7 @@ update(){
 
 	## PLUG-INS EXTRAS ##
 
-	echo -e "$BLEU""$LG_SEARCH_FOR Plug-ins Extras"
+	echo -e "$BLEU""\n$LG_SEARCH_FOR Plug-ins Extras"
 	if test -e "$BZR_REV_FILE_PLUG_INS_EXTRAS"; then # le fichier existe
 		ACTUAL_PLUG_INS_EXTRAS_VERSION=`cat "$BZR_REV_FILE_PLUG_INS_EXTRAS"`
 	else
@@ -505,7 +677,6 @@ update(){
 		cd $DIR/$CAIRO_DOCK_PLUG_INS_EXTRAS_LP_BRANCH
 		bzr $BZR_UP lp:$CAIRO_DOCK_PLUG_INS_EXTRAS_LP_BRANCH
 		NEW_PLUG_INS_EXTRAS_VERSION=`bzr revno -q`
-		bzr log -l1 --line
 		cd $DIR/
 	else
 		NEW_PLUG_INS_EXTRAS_VERSION=`bzr revno -q $CAIRO_DOCK_PLUG_INS_EXTRAS_LP_BRANCH`
@@ -519,34 +690,103 @@ update(){
 	echo -e "\nCairo-Dock-Plug-Ins-Extras : rev $ACTUAL_PLUG_INS_EXTRAS_VERSION -> $NEW_PLUG_INS_EXTRAS_VERSION \n" >> $LOG_CAIRO_DOCK
 
 	if [ $ACTUAL_PLUG_INS_EXTRAS_VERSION -ne $NEW_PLUG_INS_EXTRAS_VERSION ]; then
-		echo -e "$VERT""$LG_UP_FOUND Plug-Ins Extras"
+		DIFF_PLUG_INS_EXTRAS_VERSION=$(($NEW_PLUG_INS_EXTRAS_VERSION-$ACTUAL_PLUG_INS_EXTRAS_VERSION))
+		if [ $DIFF_PLUG_INS_EXTRAS_VERSION -le 10 ]; then
+			bzr log -l$DIFF_PLUG_INS_EXTRAS_VERSION --line $CAIRO_DOCK_PLUG_INS_EXTRAS_LP_BRANCH
+		else
+			bzr log -l1 --line $CAIRO_DOCK_PLUG_INS_EXTRAS_LP_BRANCH
+		fi
+		echo -e "$VERT""\n$LG_UP_FOUND Plug-Ins Extras"
 		install_cairo_dock_plugins_extras
 		UPDATE=1
 	fi
-  
+
+	## CAIRO-DESKLET ##
+
+	echo -e "$BLEU""\n$LG_SEARCH_FOR Desklets"
+	if test -e "$BZR_REV_FILE_DESKLET"; then # le fichier existe
+		ACTUAL_DESKLET_VERSION=`cat "$BZR_REV_FILE_DESKLET"`
+	else
+		echo 0 > "$BZR_REV_FILE_DESKLET"
+		ACTUAL_DESKLET_VERSION=0
+	fi
+
+	if [ ! -d $DIR/$CAIRO_DESKLET_LP_BRANCH ]; then # desklet a été ajouté après
+		echo -e "$BLEU""$LG_DL_BG Desklets"
+		if [ $BZR_DL_MODE -eq 1 ]; then
+			bzr branch lp:$CAIRO_DESKLET_LP_BRANCH
+		else
+			bzr checkout --lightweight lp:$CAIRO_DESKLET_LP_BRANCH
+		fi
+		if [ $? -ne 0 ]; then
+			echo -e "$ROUGE""$LG_DL_ERROR"
+			read
+			exit
+		else
+			NEW_DESKLET_VERSION=`bzr revno -q $CAIRO_DESKLET_LP_BRANCH`
+			echo $NEW_DESKLET_VERSION > $BZR_REV_FILE_DESKLET
+			echo -e "\nCairo-Desklets : rev $NEW_DESKLET_VERSION \n"
+			echo -e "\nCairo-Desklets : rev $NEW_DESKLET_VERSION \n" >> $LOG_CAIRO_DOCK
+		fi
+	elif [ $BZR_DL_MODE -eq 1 ]; then
+		cd $DIR/$CAIRO_DESKLET_LP_BRANCH
+		bzr $BZR_UP lp:$CAIRO_DESKLET_LP_BRANCH
+		NEW_DESKLET_VERSION=`bzr revno -q`
+		cd $DIR/
+	else
+		NEW_DESKLET_VERSION=`bzr revno -q $CAIRO_DESKLET_LP_BRANCH`
+		if [ $ACTUAL_DESKLET_VERSION -ne $NEW_DESKLET_VERSION ]; then
+			bzr $BZR_UP $CAIRO_DESKLET_LP_BRANCH
+		fi
+	fi
+
+	echo $NEW_DESKLET_VERSION > "$BZR_REV_FILE_DESKLET"
+	echo -e "\nCairo-Desklet : rev $ACTUAL_DESKLET_VERSION -> $NEW_DESKLET_VERSION \n"
+	echo -e "\nCairo-Desklet : rev $ACTUAL_DESKLET_VERSION -> $NEW_DESKLET_VERSION \n" >> $LOG_CAIRO_DOCK
+
+	if [ $ACTUAL_DESKLET_VERSION -ne $NEW_DESKLET_VERSION ]; then
+		DIFF_DESKLET_VERSION=$(($NEW_DESKLET_VERSION-$ACTUAL_DESKLET_VERSION))
+		if [ $DIFF_DESKLET_VERSION -le 10 ]; then
+			bzr log -l$DIFF_DESKLET_VERSION --line $CAIRO_DESKLET_LP_BRANCH
+		else
+			bzr log -l1 --line $CAIRO_DESKLET_LP_BRANCH
+		fi
+		echo -e "$VERT""\n$LG_UP_FOUND Desklet"
+		install_cairo_desklet
+		UPDATE=1
+	elif [ $UPDATE_CAIRO_DOCK -eq 1 ]; then
+		if [ $LG -eq 0 ]; then
+			echo -e "$VERT""Recompilation suite à la mise à jour de l'API Cairo-Dock"
+		else
+			echo -e "$VERT""Recompilation due to some changes of Cairo-Dock API"
+		fi
+		install_cairo_desklet
+	fi
+
+	## CHECK ##
+
 	echo -e "$NORMAL"
-    
- 	if [ $UPDATE -eq 1 ]; then
+
+	if [ $UPDATE -eq 1 ]; then
 	    check $LOG_CAIRO_DOCK "CD"
 	else
 		if [ $LG -eq 0 ]; then
 			echo -e "$BLEU""Pas de mise à jour disponible"
 			echo -e "$NORMAL"
-			if [[ `ps aux | grep -e "[c]airo-dock -"` ]]; then
-				dbus-send --session --dest=org.cairodock.CairoDock /org/cairodock/CairoDock org.cairodock.CairoDock.ShowDialog string:"Cairo-Dock: Pas de mise à jour" int32:8 string:terminal string:any string:none
+			if test  `ps aux | grep -c " [c]airo-dock"` -gt 0; then
+				dbus-send --session --dest=org.cairodock.CairoDock /org/cairodock/CairoDock org.cairodock.CairoDock.ShowDialog string:"Cairo-Dock: Pas de mise à jour" int32:8 string:"class=$COLORTERM"
 			else
 				zenity --info --title=Cairo-Dock --text="$LG_CLOSE"
 			fi
 		else
 			echo -e "$BLEU""No update available"
 			echo -e "$NORMAL"
-			if [[ `ps aux | grep -e "[c]airo-dock -"` ]]; then
-				dbus-send --session --dest=org.cairodock.CairoDock /org/cairodock/CairoDock org.cairodock.CairoDock.ShowDialog string:"Cairo-Dock: no update" int32:8 string:terminal string:any string:none
+			if test  `ps aux | grep -c " [c]airo-dock"` -gt 0; then
+				dbus-send --session --dest=org.cairodock.CairoDock /org/cairodock/CairoDock org.cairodock.CairoDock.ShowDialog string:"Cairo-Dock: no update" int32:8 string:"class=$COLORTERM"
 			else
 				zenity --info --title=Cairo-Dock --text="$LG_CLOSE"
 			fi
 		fi
-		exit
 	fi
 }
 
@@ -572,32 +812,31 @@ check() {
 			if [ $LG -eq 0 ]; then
 				echo "Des erreurs ont été détéctées lors de l'installation."
 				egrep -i "( error| Erreur)" $1 | grep -v error.svg
-				echo "Veuillez consulter le fichier log.txt pour plus d'informations et vous rendre sur le forum de cairo-dock pour reporter l'erreur dans la section \"Version BZR\" "
+				echo -e "Veuillez consulter le fichier log.txt pour plus d'informations et vous rendre sur le forum de cairo-dock pour reporter l'erreur dans la section \"Version BZR\". Merci !\n"
 			else
 				echo "Some errors have been detected during the installation"
 				egrep -i "( error| Erreur)" $1 | grep -v error.svg
-				echo "Please keep a copy of the file 'log.txt' and report the bug on our forum (http://www.glx-dock.org) on the section \"Version BZR\". Thanks ! "
+				echo -e "Please keep a copy of the file 'log.txt' and report the bug on our forum (http://www.glx-dock.org) on the section \"Version BZR\". Thank you!\n"
 			fi
+			check_version
 			echo -e "$NORMAL"
-			if [[ `ps aux | grep -e "[c]airo-dock -"` ]]; then
-				dbus-send --session --dest=org.cairodock.CairoDock /org/cairodock/CairoDock org.cairodock.CairoDock.ShowDialog string:"Cairo-Dock: Erreur à la compilation
-Cairo-Dock: Compilation error
-	=> http://www.glx-dock.org" int32:10 string:terminal string:any string:none
+			if test  `ps aux | grep -c " [c]airo-dock"` -gt 0; then
+				dbus-send --session --dest=org.cairodock.CairoDock /org/cairodock/CairoDock org.cairodock.CairoDock.ShowDialog string:"Cairo-Dock: Compilation error
+Cairo-Dock: Erreur à la compilation
+	Please report this bug !=> http://www.glx-dock.org" int32:0 string:"class=$COLORTERM"
 			else
 				zenity --info --title=Cairo-Dock --text="$LG_CLOSE"
 			fi
-			exit
 		else
 			echo -e "$VERT"
 			echo "$LG_INSTALL_OK"
 			echo -e "$NORMAL"
-			if [[ `ps aux | grep -e "[c]airo-dock -"` ]]; then
-				dbus-send --session --dest=org.cairodock.CairoDock /org/cairodock/CairoDock org.cairodock.CairoDock.ShowDialog string:"Cairo-Dock: Mis à jour avec succès
-Cairo-Dock: Updated successfully" int32:8 string:terminal string:any string:none
+			if test  `ps aux | grep -c " [c]airo-dock"` -gt 0; then
+				dbus-send --session --dest=org.cairodock.CairoDock /org/cairodock/CairoDock org.cairodock.CairoDock.ShowDialog string:"Cairo-Dock: Successfully Updated
+Cairo-Dock: Mis à jour avec succès" int32:8 string:"class=$COLORTERM"
 			else
 				zenity --info --title=Cairo-Dock --text="$LG_CLOSE"
 			fi
-			exit
 		fi
 	fi
 }
@@ -614,7 +853,7 @@ testping () {
 			echo "It's required if you want to access to our server"
 		fi
 		echo -e "$NORMAL"
-		sleep 5
+		read
 		exit
 	else
 		echo -e "$VERT""\nInternet Connexion\t [ OK ]\n""$NORMAL"
@@ -679,7 +918,7 @@ detect_env_graph()
 		       echo -e "$VERT""Votre environnement est KDE 3 \n"
 		   fi
 		## gnome
-		elif [[ `ps aux | grep -e "[g]nome-settings-daemon" ` ]]; then
+		elif test -n "$GNOME_DESKTOP_SESSION_ID" -o `ps aux | grep -c "[g]nome-settings-daemon"` -gt 0; then
 		   ENV=1;
 		   if [ $DISTRIB = "gutsy" ]; then
 		       PLUGINS_INTEGRATION=$PLUGINS_GNOME_OLD
@@ -692,7 +931,7 @@ detect_env_graph()
 		   ENV=3;
 		   PLUGINS_INTEGRATION=$PLUGINS_XFCE
 		   echo -e "$VERT""Votre environnement est XFCE 4 \n"
-		elif [[ `ps aux | grep -e "xfce"`  ]]; then
+		elif [[ `ps aux | grep -e "[x]fce"`  ]]; then
 		   ENV=3;
 		   PLUGINS_INTEGRATION=$PLUGINS_XFCE
 		   echo -e "$VERT""Votre environnement est XFCE \n"
@@ -711,7 +950,7 @@ detect_env_graph()
 		       echo -e "$VERT""Your Desktop Environment is KDE 3 \n"
 		   fi
 		## gnome
-		elif [[ `ps aux | grep -e "[g]nome-settings-daemon" ` ]]; then
+		elif test -n "$GNOME_DESKTOP_SESSION_ID" -o `ps aux | grep -c "[g]nome-settings-daemon"` -gt 0; then
 		   ENV=1;
 		   if [ $DISTRIB = "gutsy" ]; then
 		       PLUGINS_INTEGRATION=$PLUGINS_GNOME_OLD
@@ -791,74 +1030,94 @@ check_dependancies() {
 			else
 				echo -e "$ROUGE"" 'sudo' package isn't installed. Please install it.""$NORMAL"""
 			fi
+			read
 			exit
 		fi
 
 	sudo -v # Pour que Nochka puisse aller regarder la tv en attendant la fin de la compilation ;-)
 
-	sudo apt-get install -s cairo-dock | grep Inst > /dev/null	
-	if [ $? -eq 1 ]; then  #CD est installé par paquet
-		if [ $LG -eq 0 ]; then
-			echo -e "$ROUGE"" Désinstallation du paquet 'Cairo-Dock' ""$NORMAL"""
+	if [ $(grep -c ^Ubuntu /etc/issue) -eq 1 ]; then # pour ne pas avoir un message d'erreur sur les autres
+		if [ $DISTRIB = 'karmic' ]; then #karmic
+			NEEDED="$NEEDED $NEEDED_KARMIC "
+		elif [ `lsb_release -rs | cut -d. -f1` -ge 10 ]; then #lucid ou nouveau
+			NEEDED="$NEEDED $NEEDED_A_KARMIC "
 		else
-			echo -e "$ROUGE""Uninstallation of 'Cairo-Dock' package.""$NORMAL"""
+			NEEDED="$NEEDED $NEEDED_B_KARMIC " #karmic ou plus vieux
 		fi
-		sudo apt-get purge -qq cairo-dock
+		if test `lsb_release -rs | cut -d. -f1` -ge 10 -a ! "$DISTRIB" = "lucid"; then #maverick ou nouveau
+			NEEDED="$NEEDED $NEEDED_A_LUCID "
+		else #lucid ou ancien
+			CONFIGURE="$CONFIGURE -Denable-vala-support=OFF"
+			if [ $ENV -eq 1 ]; then #Gnome
+				NEEDED="$NEEDED $NEEDED_GNOME "
+			elif [ $ENV -eq 3 ]; then #XFCE
+				NEEDED="$NEEDED $NEEDED_XFCE "
+			fi
+		fi
+		if test `lsb_release -rs | cut -d. -f1` -ge 11; then #natty ou nouveau
+			NEEDED="$NEEDED $NEEDED_A_MAVERICK "
+			CONFIGURE="$CONFIGURE -Denable-vala-support=ON"
+			if test ! "$DISTRIB" = "natty"; then # oneiric ou nouveau
+				NEEDED="$NEEDED $NEEDED_A_NATTY "
+			else
+				NEEDED="$NEEDED $NEEDED_B_ONEIRIC "
+			fi
+		else
+			NEEDED="$NEEDED $NEEDED_B_NATTY $NEEDED_B_ONEIRIC "
+		fi
+		if test `lsb_release -rs | cut -d. -f1` -ge 12; then # precise or newer
+			CD_PACKAGES_OTHER="libgldi-dev libgldi3 cairo-dock-plug-ins-dbus-interface-python cairo-dock-plug-ins-dbus-interface-mono cairo-dock-plug-ins-dbus-interface-ruby cairo-dock-plug-ins-dbus-interface-vala"
+		else
+			CD_PACKAGES_OTHER="cairo-dock-dev"
+		fi
+	else # on test tout...
+		NEEDED="$NEEDED $NEEDED_THIRD_PARTY $NEEDED_THIRD_PARTY_A_KARMIC $NEEDED_A_KARMIC $NEEDED_KARMIC $NEEDED_A_LUCID $NEEDED_A_MAVERICK $NEEDED_B_NATTY $NEEDED_A_NATTY $NEEDED_B_ONEIRIC"
+		CONFIGURE="$CONFIGURE -Denable-vala-support=ON"
+		CD_PACKAGES_OTHER="libgldi-dev libgldi3 cairo-dock-plug-ins-dbus-interface-python cairo-dock-plug-ins-dbus-interface-mono cairo-dock-plug-ins-dbus-interface-ruby cairo-dock-plug-ins-dbus-interface-vala"
 	fi
+
+	paquetsPresent=""
+	cd_packages=""
+	paquetsOK=""
 
 	for tested in $NEEDED
 	do
-		dpkg -s $tested |grep installed |grep "install ok" > /dev/null	
+		dpkg -s $tested |grep installed |grep "install ok" > /dev/null
 		if [ $? -eq 1 ]; then
 			echo -e "$ROUGE""This package $tested isn't installed : Installation""$NORMAL"""
-			sudo apt-get install -qq $tested  >> $LOG_CAIRO_DOCK
+			paquetsPresent="$paquetsPresent $tested"
+			# sudo apt-get install -qq $tested  >> $LOG_CAIRO_DOCK
 		fi
 	done
 
-	if [ $ENV -eq 1 ]; then #Gnome
-		dpkg -s $NEEDED_GNOME |grep installed |grep "install ok" > /dev/null	
-		if [ $? -eq 1 ]; then
-			echo -e "$ROUGE""This package $NEEDED_GNOME isn't installed : Installation""$NORMAL"""
-			sudo apt-get install -qq $NEEDED_GNOME  >> $LOG_CAIRO_DOCK
-		fi
-	elif [ $ENV -eq 3 ]; then #XFCE
-		dpkg -s $NEEDED_XFCE |grep installed |grep "install ok" > /dev/null	
-		if [ $? -eq 1 ]; then
-			echo -e "$ROUGE""This package $NEEDED_XFCE isn't installed : Installation""$NORMAL"""
-			sudo apt-get install -qq $NEEDED_XFCE  >> $LOG_CAIRO_DOCK
-		fi
-	fi
-	if [ $(grep -c ^Ubuntu /etc/issue) -eq 1 ]; then # pour ne pas avoir un message d'erreur sur les autres
-		if [ $DISTRIB = 'karmic' ] || [ `lsb_release -rs | cut -d. -f1` -ge 10 ]; then #karmic ou nouveau
-			dpkg -s $NEEDED_KARMIC |grep installed |grep "install ok" > /dev/null
-			if [ $? -eq 1 ]; then
-				echo -e "$ROUGE""This package $NEEDED_KARMIC isn't installed : Installation""$NORMAL"""
-				sudo apt-get install -qq $NEEDED_KARMIC  >> $LOG_CAIRO_DOCK
-			fi
+	for testPkg in $paquetsPresent; do
+		sudo apt-get install -s $testPkg > /dev/null 2>&1
+		if [ $? -eq 0 ]; then
+			paquetsOK="$paquetsOK $testPkg"
 		else
-			dpkg -s $NEEDED_B_KARMIC |grep installed |grep "install ok" > /dev/null
-			if [ $? -eq 1 ]; then
-				echo -e "$ROUGE""This package $NEEDED_B_KARMIC isn't installed : Installation""$NORMAL"""
-				sudo apt-get install -qq $NEEDED_B_KARMIC  >> $LOG_CAIRO_DOCK
-			fi
+			echo -e "$ROUGE""This package $testPkg isn't available""$NORMAL"""
 		fi
-	elif [ $(grep -c ^Debian /etc/issue) -eq 1 ]; then
-		dpkg -s $NEEDED_KARMIC |grep installed |grep "install ok" > /dev/null
-		if [ $? -eq 1 ]; then
-			echo -e "$ROUGE""This package $NEEDED_KARMIC isn't installed : Installation""$NORMAL"""
-			sudo apt-get install -qq $NEEDED_KARMIC  >> $LOG_CAIRO_DOCK
+	done
+
+	sudo apt-get install -y --force-yes -m -qq $paquetsOK
+
+	CD_PACKAGES_BASE="cairo-dock cairo-dock-plug-ins cairo-dock-core cairo-dock-plug-ins-data cairo-dock-data cairo-dock-plug-ins-integration"
+	# check CD
+	# juste plus rapide que de tester un à un...
+	DPKG_SELECTIONS=`dpkg --get-selections`
+	for cd_package in $CD_PACKAGES_BASE $CD_PACKAGES_OTHER; do
+		if [ `echo $DPKG_SELECTIONS | grep "$cd_package" | grep -c install` -ge 1 ]; then  #CD est installé par paquet
+			cd_packages="$cd_packages $cd_package"
 		fi
-	else
-		dpkg -s $NEEDED_KARMIC |grep installed |grep "install ok" > /dev/null
-		if [ $? -eq 1 ]; then
-			echo -e "$ROUGE""This package $NEEDED_KARMIC isn't installed : Installation""$NORMAL"""
-			sudo apt-get install -qq $NEEDED_KARMIC  >> $LOG_CAIRO_DOCK
+	done
+	if test -n "$cd_packages"; then
+		if [ $LG -eq 0 ]; then
+			echo -e "$ROUGE"" Désinstallation des paquets '$cd_packages' ""$NORMAL"""
+		else
+			echo -e "$ROUGE""Uninstallation of these packages: '$cd_packages'.""$NORMAL"""
 		fi
-		dpkg -s $NEEDED_B_KARMIC |grep installed |grep "install ok" > /dev/null
-		if [ $? -eq 1 ]; then
-			echo -e "$ROUGE""This package $NEEDED_B_KARMIC isn't installed : Installation""$NORMAL"""
-			sudo apt-get install -qq $NEEDED_B_KARMIC  >> $LOG_CAIRO_DOCK
-		fi
+		sudo apt-get purge -qq $cd_packages
+		sudo apt-get autoremove --purge -qq
 	fi
 
 	if [ $LG -eq 0 ]; then
@@ -872,11 +1131,7 @@ check_dependancies() {
 
 
 ppa_weekly() {
-	if [ $(grep -c ^Debian /etc/issue) -eq 1 ]; then
-		PPA="deb http://ppa.launchpad.net/cairo-dock-team/weekly-debian/ubuntu jaunty main ## Cairo-Dock-PPA-Weekly for Debian"
-		su -s
-		W_SUDO=""
-	elif [ $(grep -c ^Ubuntu /etc/issue) -eq 1 ]; then
+	if [ $(grep -c ^Ubuntu /etc/issue) -eq 1 ]; then
 		LSB_RELEASE=`lsb_release -sc`
 		PPA="deb http://ppa.launchpad.net/cairo-dock-team/weekly/ubuntu $LSB_RELEASE main ## Cairo-Dock-PPA-Weekly"
 		sudo -v
@@ -887,10 +1142,11 @@ ppa_weekly() {
 		W_SUDO="sudo"
 	else
 		if [ $LG -eq 0 ]; then
-			echo -e "$ROUGE""Désolé, seuls Ubuntu et Debian sont supportés. En cas de problème, merci de nous contacter sur notre forum.""$NORMAL"""
+			echo -e "$ROUGE""Désolé, seuls Ubuntu est supportés. En cas de problème, merci de nous contacter sur notre forum.""$NORMAL"""
 		else
-			echo -e "$ROUGE""Sorry but only Debian and Ubuntu are supported. If there is a problem, please contact us on our forum.""$NORMAL"""
+			echo -e "$ROUGE""Sorry but only Ubuntu is supported. If there is a problem, please contact us on our forum.""$NORMAL"""
 		fi
+		read
 		exit
 	fi
 
@@ -919,39 +1175,20 @@ ppa_weekly() {
 	echo -e "$NORMAL"""
 	$W_SUDO apt-get install cairo-dock  >> $LOG_CAIRO_DOCK
 	zenity --info --title=Cairo-Dock --text="$LG_CLOSE"
-	exit
 }
 
 
 about() {
-	echo "Author : Mav & Matttbe"
-	echo "Contact : mav@glx-dock.org"
-	exit
+	echo -e "Author : Mav (2008-2009)\n\t matttbe (2009-2012)"
+	echo -e "Contact : mav@glx-dock.org\n\t matttbe@glx-dock.org"
 }
 
-if [ "$1" = "smo_install" ]; then
-	detect_distrib
-	detect_env_graph
-	check_dependancies
-	install
-elif [ "$1" = "smo_update" ]; then
-	detect_distrib
-	detect_env_graph
-	check_dependancies
-	update
-elif [ "$1" = "-e" ]; then # possibilité d'ajouter des args
-	ARGS=$2
-	echo "$ARGS" > $DIR/.args
-	if [ $(grep -c "enable" $DIR/.args) -eq 1 ]; then # s'il y a au-moins un enable
-		CONFIGURE="$CONFIGURE $ARGS"
-	else
-		for arg in $ARGS
-		do
-			CONFIGURE="$CONFIGURE -Denable-$arg=yes"
-		done
-	fi
-	rm -f $DIR/.args
-fi
+check_version() {
+	echo -e "Cairo-Dock Core: `cat $BZR_REV_FILE_CORE`"
+	echo -e "Cairo-Dock Plug-ins: `cat $BZR_REV_FILE_PLUG_INS`"
+	echo -e "Cairo-Dock Plug-ins Extras: `cat $BZR_REV_FILE_PLUG_INS_EXTRAS`"
+	echo -e "Cairo-Desklet: `cat $BZR_REV_FILE_DESKLET`"
+}
 
 echo $LANG | grep -c ^fr > /dev/null
 if [ $? -eq 0 ]; then 
@@ -968,6 +1205,35 @@ if [ $DEBUG -ne 1 ]; then
 	# fi
 fi
 
+if [ "$1" = "smo_install" -o "$1" = "-i" -o "$1" = "-I" ]; then
+	detect_distrib
+	detect_env_graph
+	check_dependancies
+	install
+elif [ "$1" = "smo_update" -o "$1" = "-u" -o "$1" = "-U" ]; then
+	detect_distrib
+	detect_env_graph
+	check_dependancies
+	update
+elif [ "$1" = "-R" ]; then
+	detect_distrib
+	detect_env_graph
+	check_dependancies
+	reinstall
+elif [ "$1" = "-e" ]; then # possibilité d'ajouter des args
+	ARGS=$2
+	echo "$ARGS" > $DIR/.args
+	if [ $(grep -c "enable" $DIR/.args) -eq 1 ]; then # s'il y a au-moins un enable
+		CONFIGURE="$CONFIGURE $ARGS"
+	else
+		for arg in $ARGS
+		do
+			CONFIGURE="$CONFIGURE -Denable-${arg}=ON"
+		done
+	fi
+	rm -f $DIR/.args
+fi
+
 if [ $LG -eq 0 ]; then
 	echo -e "$NORMAL""Script d'installation de la version BZR de Cairo-Dock (FR)\n"
 	echo -e "Veuillez choisir l'option d'installation : \n"
@@ -977,7 +1243,8 @@ if [ $LG -eq 0 ]; then
 		echo -e "\t2 --> Reinstaller la version BZR actuelle"
 		echo -e "\t3 --> Désinstaller la version BZR"
 		echo -e "\t4 --> Installer le ppa weekly au lieu de BZR "
-		echo -e "\t5 --> A propos"
+		echo -e "\t5 --> Afficher les actuelles numéros de révision."
+		echo -e "\t6 --> A propos"
 
 		echo -e "\nVotre choix : "
 		read answer_menu
@@ -1009,6 +1276,10 @@ if [ $LG -eq 0 ]; then
 			;;
 
 			"5")
+				check_version
+			;;
+
+			"6")
 				about
 			;;
 		esac
@@ -1047,7 +1318,8 @@ else
 		echo -e "\t2 --> Reinstall the current version"
 		echo -e "\t3 --> Uninstall the current version"
 		echo -e "\t4 --> Install weekly ppa instead of BZR"
-		echo -e "\t5 --> About this script"
+		echo -e "\t5 --> Display the current installed revision"
+		echo -e "\t6 --> About this script"
 
 		echo -e "\nYour choice : "
 		read answer_menu
@@ -1071,7 +1343,6 @@ else
 			"3")
 				uninstall
 				zenity --info --title=Cairo-Dock --text="Cairo-Dock has been uninstalled, please read the message into the terminal"
-				exit
 			;;
 
 			"4")
@@ -1079,6 +1350,10 @@ else
 			;;
 
 			"5")
+				check_version
+			;;
+
+			"6")
 				about
 			;;
 		esac
@@ -1108,4 +1383,8 @@ else
 			;;
 		esac
 	fi
+fi
+
+if [ "$1" = "--no-exit" ]; then
+	read
 fi

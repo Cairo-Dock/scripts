@@ -1,9 +1,9 @@
 #!/bin/sh
 
 ARG1=$1
-Ubuntu_Distrib="hardy intrepid jaunty karmic lucid"
-Architecture="i386 amd64 lpia"
-Arch_lucid="i386 amd64"
+Ubuntu_Distrib="lucid oneiric precise quantal raring"
+# added the new distrib => l108
+Architecture="i386 amd64 "
 CD_key="41317877"
 ## LUCID => no LPIA
 debug_mv="cp"	# déplace les fichiers (mv) ou copier (cp)
@@ -28,12 +28,7 @@ dossiers() {
 		mkdir $PoolDir/all
 		mkdir $PoolDir/all/cairo-dock
 		mkdir $PoolDir/all/cairo-dock-plug-ins
-		if [ "$distrib" = "lucid" ]; then
-			Architecture2="$Arch_lucid"
-		else
-			Architecture2="$Architecture"
-		fi
-		for archi in $Architecture2
+		for archi in $Architecture
 		do
 			mkdir $PoolDir/$archi
 			mkdir $PoolDir/$archi/cairo-dock
@@ -79,20 +74,12 @@ paquets() {
 		PoolDir=$MainDir/pool
 		echo "\n\t$distrib"
 			# all
-		$debug_mv Incoming/cairo-dock/cairo-dock_*~"$distrib"_all.deb $PoolDir/all/cairo-dock
-		$debug_mv Incoming/cairo-dock/cairo-dock-dev_*~"$distrib"_all.deb $PoolDir/all/cairo-dock
-		$debug_mv Incoming/cairo-dock/cairo-dock-data_*~"$distrib"_all.deb $PoolDir/all/cairo-dock
-		$debug_mv Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins-data_*~"$distrib"_all.deb $PoolDir/all/cairo-dock-plug-ins
-		if [ "$distrib" = "lucid" ]; then
-			Architecture2="$Arch_lucid"
-		else
-			Architecture2="$Architecture"
-		fi
-		for archi in $Architecture2
+		$debug_mv Incoming/cairo-dock/*~"$distrib"_all.deb $PoolDir/all/cairo-dock
+		$debug_mv Incoming/cairo-dock-plug-ins/*~"$distrib"_all.deb $PoolDir/all/cairo-dock-plug-ins
+		for archi in $Architecture
 		do
-			$debug_mv Incoming/cairo-dock/cairo-dock-core*~"$distrib"_$archi.deb $PoolDir/$archi/cairo-dock
-			$debug_mv Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins_*~"$distrib"_$archi.deb $PoolDir/$archi/cairo-dock-plug-ins
-			$debug_mv Incoming/cairo-dock-plug-ins/cairo-dock-plug-ins-integration_*~"$distrib"_$archi.deb $PoolDir/$archi/cairo-dock-plug-ins
+			$debug_mv Incoming/cairo-dock/*~"$distrib"_$archi.deb $PoolDir/$archi/cairo-dock
+			$debug_mv Incoming/cairo-dock-plug-ins/*~"$distrib"_$archi.deb $PoolDir/$archi/cairo-dock-plug-ins
 		done
 	done
 }
@@ -104,7 +91,33 @@ depot() {
 		echo "\tUbuntu $distrib" 
 		MainDir=dists/$distrib
 		PoolDir=$MainDir/pool
+		Version_distrib="unstable"
+		Description_distrib="Ubuntu Unstable"
 		case $distrib in
+			raring)
+				Version_distrib="13.04"
+				Description_distrib="Ubuntu Raring 13.04"
+				;;
+			quantal)
+				Version_distrib="12.10"
+				Description_distrib="Ubuntu Quantal 12.10"
+				;;
+			precise)
+				Version_distrib="12.04"
+				Description_distrib="Ubuntu Precise 12.04"
+				;;
+			oneiric)
+				Version_distrib="11.10"
+				Description_distrib="Ubuntu Oneiric 11.10"
+				;;
+			natty)
+				Version_distrib="11.04"
+				Description_distrib="Ubuntu Natty 11.04"
+				;;
+			maverick)
+				Version_distrib="10.10"
+				Description_distrib="Ubuntu Maverick 10.10"
+				;;
 			lucid)
 				Version_distrib="10.04"
 				Description_distrib="Ubuntu Lucid 10.04"
@@ -128,12 +141,7 @@ depot() {
 		esac
 		mkdir $MainDir/cairo-dock/
 	
-		if [ "$distrib" = "lucid" ]; then
-			Architecture2="$Arch_lucid"
-		else
-			Architecture2="$Architecture"
-		fi
-		for archi in $Architecture2
+		for archi in $Architecture
 		do
 			echo "\t\tArchitecture : $archi" 
 			Dir=$MainDir/cairo-dock/binary-$archi
@@ -147,7 +155,6 @@ depot() {
 			cat $Dir/Packages | bzip2 > $Dir/Packages.bz2
 		
 			echo "\t\t\tRelease - $archi"
-			Date=`date`
 			echo "Archive: $distrib" > $Dir/Release
 			echo "Version: $Version_distrib" >> $Dir/Release
 			echo "Components: cairo-dock" >> $Dir/Release
@@ -158,19 +165,18 @@ depot() {
 
 		# create Release file
 		echo "\n\t\tRelease : $distrib"
-		Date=`date`
-		echo "Origin: Cairo-Dock Team" > $MainDir/Release
-		echo "Label: Ubuntu" >> $MainDir/Release
-		echo "Suite: $distrib" >> $MainDir/Release
-		echo "Version: $Version_distrib" >> $MainDir/Release
-		echo "Codename: $distrib" >> $MainDir/Release
-		echo "Date: $Date" >> $MainDir/Release
-		echo "Architectures: $Architecture" >> $MainDir/Release
-		echo "Components: cairo-dock" >> $MainDir/Release
-		echo "Description: $Description_distrib" >> $MainDir/Release
+		echo "Origin: Cairo-Dock Team" > $MainDir/../Release_$distrib
+		echo "Label: Ubuntu" >> $MainDir/../Release_$distrib
+		echo "Suite: $distrib" >> $MainDir/../Release_$distrib
+		echo "Version: $Version_distrib" >> $MainDir/../Release_$distrib
+		echo "Codename: $distrib" >> $MainDir/../Release_$distrib
+		echo "Architectures: $Architecture" >> $MainDir/../Release_$distrib
+		echo "Components: cairo-dock" >> $MainDir/../Release_$distrib
+		echo "Description: $Description_distrib" >> $MainDir/../Release_$distrib
 
 		echo "\t\t\tMD5, SHA1 et SHA256 : $distrib"
-		apt-ftparchive release $MainDir >> $MainDir/Release
+		apt-ftparchive release $MainDir >> $MainDir/../Release_$distrib
+		mv $MainDir/../Release_$distrib $MainDir/Release
 
 		echo "\t\t\tRelease.gpg : $distrib\n\n"
 		# sign Release file
