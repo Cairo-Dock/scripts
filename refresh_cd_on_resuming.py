@@ -47,7 +47,10 @@ def restart_dock ():
 	bus = dbus.SessionBus ()
 	cd_dbus_object = bus.get_object('org.cairodock.CairoDock', '/org/cairodock/CairoDock')
 	cd_dbus_iface = dbus.Interface(cd_dbus_object, 'org.cairodock.CairoDock')
-	cd_dbus_iface.Reboot ()
+	try:
+		cd_dbus_iface.Reboot ()
+	except:
+		pass
 
 def on_received_signal_login1 (bSuspend): # false <=> resuming
 	print ("on_received_signal:", bSuspend)
