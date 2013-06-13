@@ -138,7 +138,7 @@ done
 echo -e "$NORMAL"
 
 if [ "$DELAY" = "0" ]; then unset DELAY; fi
-if [ "$SHUTDOWN" != "" ]; then sudo -v; fi
+if [ "$SHUTDOWN" != "" ]; then sudo -v; fi # start sudo unlocked state timeout
 TRAP_ON='echo -e "\e]0;$BASH_COMMAND\007"' # Afficher la commande en cours dans le terminal
 TRAP_OFF="trap DEBUG"
 date_AJD=`date '+%Y%m%d'`
@@ -205,6 +205,7 @@ fi
 echo -e "$NORMAL"
 
 date > $DIR/log.txt
+echo 0 > sleepPG; gpg --armor --sign --detach-sig sleepPG >> $DIR/log.txt # start gpg unlocked state timeout
 if [ "$SHUTDOWN" != "" ]; then sudo -v; fi
 
 ###### TARBALL ######
@@ -371,6 +372,8 @@ for RLS in $UBUNTU_CORE $DEBIAN_CORE; do
 	if [ "$SHUTDOWN" != "" ]; then sudo -v; fi
 	OPT='d'
 done
+
+###### PAUSE: reset password timeout ######
 
 if [ "$SLEEP_PG" != "" ]; then
 	echo -e "$ROUGE""\nPAUSE DE $(($SLEEP_PG/60)) minutes\n""$NORMAL"
