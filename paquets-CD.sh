@@ -12,8 +12,8 @@ UBUNTU_CORE="saucy raring quantal precise lucid"
 #UBUNTU_PLUG_INS="precise oneiric maverick lucid"
 UBUNTU_PLUG_INS="$UBUNTU_CORE"
 UNSTABLE_CODENAME="sid"
-TESTING_CODENAME="wheezy"
-STABLE_CODENAME="squeeze"
+TESTING_CODENAME="jessie"
+STABLE_CODENAME="wheezy"
 DEBIAN_SUITE="unstable testing stable"
 #DEBIAN_CORE="$DEBIAN_SUITE" ## <==
 #DEBIAN_PLUG_INS="$DEBIAN_CORE" ## <==
@@ -206,6 +206,7 @@ echo -e "$NORMAL"
 
 date > $DIR/log.txt
 echo 0 > sleepPG; gpg --armor --sign --detach-sig sleepPG >> $DIR/log.txt # start gpg unlocked state timeout
+rm -f sleepPG*
 if [ "$SHUTDOWN" != "" ]; then sudo -v; fi
 
 ###### TARBALL ######
