@@ -382,6 +382,7 @@ if [ "$SLEEP_PG" != "" ]; then
 	for i in 1 2 3 4; do
 		echo $i > sleepPG
 		gpg --armor --sign --detach-sig sleepPG >> $DIR/log.txt
+		date
 		sleep $(($SLEEP_PG/4))
 		if [ "$SHUTDOWN" != "" ]; then sudo -v; fi
 		rm -f sleepPG*
@@ -435,7 +436,7 @@ done
 
 echo -e "\n\t==== FIN ====" >> $DIR/log.txt
 
-if [ "$SHUTDOWN" != "" ]; then
+if test -n "$SHUTDOWN" -a ! -e SHUTDOWN; then
 	if test  `ps aux | grep -c " [c]airo-dock"` -gt 0; then
 		dbus-send --session --dest=org.cairodock.CairoDock /org/cairodock/CairoDock org.cairodock.CairoDock.ShowDialog string:"L'ordinateur va s'éteindre dans 1 minute'" int32:8 string:"class=$COLORTERM"
 	fi
