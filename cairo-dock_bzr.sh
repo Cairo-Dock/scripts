@@ -20,6 +20,7 @@
 
 
 ## Changelog
+# 09/12/13 : 	matttbe : Added libxcomposite-dev, libxrandr-dev (instead of libxinerama-dev), gdb (instead of ddd)
 # 16/03/13 : 	matttbe : Added libgnome-menu-3-dev
 # 16/11/12 : 	matttbe : Modified all updated CMake flags
 # 05/11/12 : 	matttbe : Detection of Gnome + fixed dependences for installations before oneiric (with GTK2)
@@ -133,7 +134,7 @@ PLUGINS_XFCE="xfce-integration"
 
 NEEDED_THIRD_PARTY="python valac ruby"
 NEEDED_THIRD_PARTY_A_KARMIC="mono-gmcs libglib2.0-cil-dev libndesk-dbus1.0-cil-dev libndesk-dbus-glib1.0-cil-dev"
-NEEDED="bzr build-essential pkg-config zenity gettext libcairo2-dev librsvg2-dev libdbus-glib-1-dev libgnomeui-dev libxxf86vm-dev x11proto-xf86vidmode-dev libxinerama-dev libxrender-dev libasound2-dev libxtst-dev libetpan-dev libexif-dev curl libglib2.0-dev cmake libcurl4-gnutls-dev libical-dev ddd libsensors4-dev libpulse-dev $NEEDED_THIRD_PARTY "
+NEEDED="bzr build-essential pkg-config zenity gettext libcairo2-dev librsvg2-dev libdbus-glib-1-dev libgnomeui-dev libxxf86vm-dev x11proto-xf86vidmode-dev libxrandr-dev libxcomposite-dev libxrender-dev libasound2-dev libxtst-dev libetpan-dev libexif-dev curl libglib2.0-dev cmake libcurl4-gnutls-dev libical-dev gdb libsensors4-dev libpulse-dev $NEEDED_THIRD_PARTY "
 NEEDED_XFCE="libthunar-vfs-1-dev"
 NEEDED_GNOME="libgnomevfs2-dev"
 NEEDED_A_KARMIC="libxklavier-dev libdbusmenu-glib-dev libupower-glib-dev $NEEDED_THIRD_PARTY_A_KARMIC"
@@ -208,13 +209,13 @@ install_cairo() {
 	mkdir $BUILD_DIR
 	cd $BUILD_DIR
 
-	if test `lsb_release -rs | cut -d. -f1` -ge 11 -o `grep -c ^"Linux Mint" /etc/issue` -eq 1; then # natty or newer
+	if test `lsb_release -rs | cut -d. -f1` -ge 11 -o `grep -c "^Linux Mint" /etc/issue` -eq 1; then # natty or newer
 		CONFIGURE_CORE="$CONFIGURE_CORE -Ddisable-gtk-grip=ON -Denable-desktop-manager=ON"
-	elif test `grep -c ^Debian /etc/issue` -eq 1; then
+	elif test `grep -c "^Debian" /etc/issue` -eq 1; then
 		CONFIGURE_CORE="$CONFIGURE_CORE -Denable-desktop-manager=ON"
 	fi
 
-	cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Debug $CONFIGURE_CORE && make clean && make -j $(grep -c ^processor /proc/cpuinfo)
+	cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Debug $CONFIGURE_CORE && make clean && make -j $(grep -c "^processor" /proc/cpuinfo)
 
 	if [ $? -ne 0 ]; then
 		cd $DIR
@@ -269,8 +270,8 @@ install_plugins() {
 	mkdir $BUILD_DIR
 	cd $BUILD_DIR
 
-	echo "cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Debug $CONFIGURE && make clean && make -j $(grep -c ^processor /proc/cpuinfo)" > BUILD.sh
-	cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Debug $CONFIGURE && make clean && make -j $(grep -c ^processor /proc/cpuinfo)
+	echo "cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Debug $CONFIGURE && make clean && make -j $(grep -c '^processor' /proc/cpuinfo)" > BUILD.sh
+	cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Debug $CONFIGURE && make clean && make -j $(grep -c '^processor' /proc/cpuinfo)
 	
 	if [ $? -ne 0 ]; then
 		cd $DIR
@@ -338,7 +339,7 @@ install_desklet() {
 	rm -rf $BUILD_DIR
 	mkdir $BUILD_DIR
 	cd $BUILD_DIR
-	cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Debug && make clean && make -j $(grep -c ^processor /proc/cpuinfo)
+	cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Debug && make clean && make -j $(grep -c '^processor' /proc/cpuinfo)
 
 	if [ $? -ne 0 ]; then
 		return 1
@@ -988,10 +989,10 @@ detect_distrib() {
 		if [ -n $DISTRIB ]; then
 			echo -e "$VERT""Votre distribution est $(grep -e DISTRIB_DESCRIPTION /etc/lsb-release | cut -d= -f2) ($DISTRIB)"
 			echo -e "$NORMAL"
-		elif [ $(grep -c ^Debian /etc/issue) -eq 1 ]; then
+		elif [ $(grep -c "^Debian" /etc/issue) -eq 1 ]; then
 			echo -e "$VERT""Votre distribution est Debian"
 			echo -e "$NORMAL"
-		elif [ $(grep -c ^"Linux Mint" /etc/issue) -eq 1 ]; then
+		elif [ $(grep -c "^Linux Mint" /etc/issue) -eq 1 ]; then
 			echo -e "$VERT""Votre distribution est Linux Mint"
 			echo -e "$NORMAL"
 		else 
@@ -1002,10 +1003,10 @@ detect_distrib() {
 		if [ -n $DISTRIB ]; then
 			echo -e "$VERT""Your distribution is $(grep -e DISTRIB_DESCRIPTION /etc/lsb-release | cut -d= -f2) ($DISTRIB)"
 			echo -e "$NORMAL"
-		elif [ $(grep -c ^Debian /etc/issue) -eq 1 ]; then
+		elif [ $(grep -c "^Debian" /etc/issue) -eq 1 ]; then
 			echo -e "$VERT""Your distribution is Debian"
 			echo -e "$NORMAL"
-		elif [ $(grep -c ^"Linux Mint" /etc/issue) -eq 1 ]; then
+		elif [ $(grep -c "^Linux Mint" /etc/issue) -eq 1 ]; then
 			echo -e "$VERT""Your distribution is Linux Mint"
 			echo -e "$NORMAL"
 		else 
@@ -1036,7 +1037,7 @@ check_dependancies() {
 
 	sudo -v # Pour que Nochka puisse aller regarder la tv en attendant la fin de la compilation ;-)
 
-	if [ $(grep -c ^Ubuntu /etc/issue) -eq 1 ]; then # pour ne pas avoir un message d'erreur sur les autres
+	if [ $(grep -c "^Ubuntu" /etc/issue) -eq 1 ]; then # pour ne pas avoir un message d'erreur sur les autres
 		if [ $DISTRIB = 'karmic' ]; then #karmic
 			NEEDED="$NEEDED $NEEDED_KARMIC "
 		elif [ `lsb_release -rs | cut -d. -f1` -ge 10 ]; then #lucid ou nouveau
@@ -1131,12 +1132,12 @@ check_dependancies() {
 
 
 ppa_weekly() {
-	if [ $(grep -c ^Ubuntu /etc/issue) -eq 1 ]; then
+	if [ $(grep -c "^Ubuntu" /etc/issue) -eq 1 ]; then
 		LSB_RELEASE=`lsb_release -sc`
 		PPA="deb http://ppa.launchpad.net/cairo-dock-team/weekly/ubuntu $LSB_RELEASE main ## Cairo-Dock-PPA-Weekly"
 		sudo -v
 		W_SUDO="sudo"
-	elif [ $(grep -c ^"Linux Mint" /etc/issue) -eq 1 ]; then
+	elif [ $(grep -c "^Linux Mint" /etc/issue) -eq 1 ]; then
 		PPA="deb http://ppa.launchpad.net/cairo-dock-team/weekly-debian/ubuntu jaunty main ## Cairo-Dock-PPA-Weekly for Debian and the others forks"
 		sudo -v
 		W_SUDO="sudo"
@@ -1190,7 +1191,7 @@ check_version() {
 	echo -e "Cairo-Desklet: `cat $BZR_REV_FILE_DESKLET`"
 }
 
-echo $LANG | grep -c ^fr > /dev/null
+echo $LANG | grep -c "^fr" > /dev/null
 if [ $? -eq 0 ]; then 
 	LG=0
 	LG_CLOSE="Cliquez sur Ok pour fermer le terminal."

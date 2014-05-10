@@ -8,7 +8,7 @@ ROOT_DIR="/opt/cairo-dock_bzr" ## <==
 DEBIAN_DIR="/opt/cairo-dock_bzr/debian" ## <==
 #DEBIAN_DIR="/opt/cairo-dock_bzr/debian_stable" ## <==
 
-UBUNTU_CORE="saucy raring quantal precise lucid"
+UBUNTU_CORE="utopic trusty saucy precise lucid"
 #UBUNTU_PLUG_INS="precise oneiric maverick lucid"
 UBUNTU_PLUG_INS="$UBUNTU_CORE"
 UNSTABLE_CODENAME="sid"
@@ -21,6 +21,7 @@ DEBIAN_SUITE="unstable testing stable"
 DEBUILD_ARG2='a'
 PPA=0
 PPAPG=$PPA
+REVISION=1 # 3.3.99.beta1.*X*
 # PPAPG="ppa0"
 
 # should not be changed
@@ -151,21 +152,21 @@ if test "$1" = ""; then
 \t|-/cairo-dock-plug-ins (+ sources)
 \t|-/debian (+ sources)
 \t|-/Paquets
-\t|-----|-/x.x.x -> (par ex : 2.1.0)
-\t|-----|-----|- => le script est lancé depuis ce dossier"
+\t|-----|-/x.x.x -> (e.g. : 2.1.0)
+\t|-----|-----|- => this script has to be launched from this dir"
 	echo -e "$BLEU""PPA :""$NORMAL""
-\t* Avoir deux ppa
-\t* Ajouter DEBFULLNAME= et DEBEMAIL= en fonction de la clé choisie dans le ~/.bashrc
-\t* Avoir un fichier ~/.dput.cf avec pseudo-version et pseudo-exp-version (ex dans ce script)"
+\t* Having one ppa
+\t* Added DEBFULLNAME= and DEBEMAIL= defined with an export or in ~/.bashrc or ~/.zshrc
+\t* Having ~/.dput.cf file with entries $DPUT_PSEUDO-[$UBUNTU_CORE]"
 
 	echo -e "$BLEU""\nExtras :""$NORMAL""
-\tSi le script est lancé avec '../.paquets-CD.sh -...' :
-\t\t-f : pas de cmake
-\t\t-u : upload -> tarballs déjà extraits"
+\tIf the script is launched with '../.paquets-CD.sh -...' :
+\t\t-f : no cmake
+\t\t-u : upload -> tarballs already exists"
 fi
 
 if [ $DIR_VERIF -eq 0 ]; then
-	echo -e "$ROUGE""ATTENTION : Mauvais dossier ! ""$NORMAL"
+	echo -e "$ROUGE""WARNING : wrong DIR! ""$NORMAL"
 	exit 0
 fi
 
@@ -175,20 +176,20 @@ PLUG_INS=`head -n 15 "$ROOT_DIR"/cairo-dock-plug-ins/CMakeLists.txt | grep "proj
 
 echo -e "$VERT"
 
-read -p "Version spéciale ? (sinon : $NUMBER_RELEASE.1~$date_AJD~bzrXXX-0ubuntu1~ppa$PPA ; 'CD' = Version pour les dépôts) : " VERSION
+read -p "Special version? (press enter for: $NUMBER_RELEASE.$REVISION~$date_AJD~bzrXXX-0ubuntu1~ppa$PPA ; 'CD' = Version for official repositories): " VERSION
 if [ "$VERSION" = "CD" ]; then
-	echo -e "$ROUGE""\n\n\t\tATTENTION : RETIRER LES FLAGS D'APPLETS INSTABLES !!!"
-	echo -e "\tDossier avec les branches core et plug-ins: $ROOT_DIR"
-	echo -e "\tDossier des répertoires debian: $DEBIAN_DIR\n\n"
-	echo -e "\tLes versions de Debian: $DEBIAN_CORE""$VERT"
+	echo -e "$ROUGE""\n\n\t\WARNING: REMOVED FLAGS FOR INSTABLE APPLETS !!!"
+	echo -e "\tDir with core and plug-ins branches: $ROOT_DIR"
+	echo -e "\tDir with debian config files: $DEBIAN_DIR\n\n"
+	echo -e "\tVersions of Debian: $DEBIAN_CORE""$VERT"
 fi
 # trickle
 	dpkg -s trickle |grep installed |grep "install ok" > /dev/null	
 	if [ $? -eq 1 ]; then
-		echo -e "$ROUGE""Le paquet 'trickle' n'est pas installé : Installation""$NORMAL"
+		echo -e "$ROUGE""Package 'trickle' is not available: Installation""$NORMAL"
 		sudo apt-get install -qq trickle 
 	fi
-read -p "Limite de l'upload (en ko) : " TRICKLE
+read -p "Limit upload bandwidth? (ko) : " TRICKLE
 if [ "$TRICKLE" = "" ]; then
 	TRICKLE=0
 fi
@@ -199,7 +200,7 @@ if test "$ARG1" = "-t"; then
 fi
 
 if test ! "$ARG1" = "-u"; then
-	read -p "Le dossier courant va être vider de son contenu, pressez Enter pour continuer" POUET
+	read -p "The current dir will be emptied, press Enter to continue" POUET
 	rm -r *
 fi
 echo -e "$NORMAL"
@@ -214,7 +215,7 @@ if test "$ARG1" = "-t"; then
 	mv ../*.tar.gz .
 	tar xzf *.tar.gz
 elif test "$ARG1" = "-u"; then
-	echo -e "$ROUGE""Uniquement l'upload, DEBUILD_ARG2 = $DEBUILD_ARG2""$NORMAL"
+	echo -e "$ROUGE""Only the upload, DEBUILD_ARG2 = $DEBUILD_ARG2""$NORMAL"
 else
 	echo "***************************"
 	echo -e "* ""$VERT""Generating tarballs ...""$NORMAL"" *"
@@ -246,8 +247,8 @@ else
 	rm -rf "$DEBIAN_PBUILDER"
 	mkdir -p "$DEBIAN_PBUILDER"
 	if [ "$VERSION" = "" ]; then
-		mv $TARBALL_ORIG_CORE "cairo-dock_$NUMBER_RELEASE.1~$date_AJD~bzr$CORE_REV.orig.tar.gz"
-		cp "cairo-dock_$NUMBER_RELEASE.1~$date_AJD~bzr$CORE_REV.orig.tar.gz" "$DEBIAN_PBUILDER"
+		mv $TARBALL_ORIG_CORE "cairo-dock_$NUMBER_RELEASE.$REVISION~$date_AJD~bzr$CORE_REV.orig.tar.gz"
+		cp "cairo-dock_$NUMBER_RELEASE.$REVISION~$date_AJD~bzr$CORE_REV.orig.tar.gz" "$DEBIAN_PBUILDER"
 	else
 		cp $TARBALL_ORIG_CORE "$DEBIAN_PBUILDER"
 	fi
@@ -282,8 +283,8 @@ else
 	cd $DIR
 	tar xzf $TARBALL_ORIG_PG
 	if [ "$VERSION" = "" ]; then
-		mv $TARBALL_ORIG_PG "cairo-dock-plug-ins_$NUMBER_RELEASE_PG.1~$date_AJD~bzr$PLUG_INS_REV.orig.tar.gz"
-		cp "cairo-dock-plug-ins_$NUMBER_RELEASE_PG.1~$date_AJD~bzr$PLUG_INS_REV.orig.tar.gz" "$DEBIAN_PBUILDER"
+		mv $TARBALL_ORIG_PG "cairo-dock-plug-ins_$NUMBER_RELEASE_PG.$REVISION~$date_AJD~bzr$PLUG_INS_REV.orig.tar.gz"
+		cp "cairo-dock-plug-ins_$NUMBER_RELEASE_PG.$REVISION~$date_AJD~bzr$PLUG_INS_REV.orig.tar.gz" "$DEBIAN_PBUILDER"
 	else
 		cp $TARBALL_ORIG_PG "$DEBIAN_PBUILDER"
 	fi
@@ -310,10 +311,10 @@ fi
 ### PACKAGE NAME
 
 if [ "$VERSION" = "" ]; then
-	VERSION="$NUMBER_RELEASE.1~$date_AJD~bzr$CORE_REV-0ubuntu1~ppa$PPA"
-	VERSION_PG="$NUMBER_RELEASE_PG.1~$date_AJD~bzr$PLUG_INS_REV-0ubuntu1~ppa$PPAPG"
-	VERSION_DEB="$NUMBER_RELEASE.1~$date_AJD~bzr$CORE_REV-1debian1~ppa$PPA"
-	VERSION_DEB_PG="$NUMBER_RELEASE_PG.1~$date_AJD~bzr$PLUG_INS_REV-1debian1~ppa$PPAPG"
+	VERSION="$NUMBER_RELEASE.$REVISION~$date_AJD~bzr$CORE_REV-0ubuntu1~ppa$PPA"
+	VERSION_PG="$NUMBER_RELEASE_PG.$REVISION~$date_AJD~bzr$PLUG_INS_REV-0ubuntu1~ppa$PPAPG"
+	VERSION_DEB="$NUMBER_RELEASE.$REVISION~$date_AJD~bzr$CORE_REV-1debian1~ppa$PPA"
+	VERSION_DEB_PG="$NUMBER_RELEASE_PG.$REVISION~$date_AJD~bzr$PLUG_INS_REV-1debian1~ppa$PPAPG"
 elif [ "$VERSION" = "CD" ]; then
 	VERSION="$NUMBER_RELEASE-0ubuntu$PPA"
 	VERSION_PG="$NUMBER_RELEASE_PG-0ubuntu$PPAPG"
@@ -328,7 +329,7 @@ fi
 cd $DIR/cairo-dock-$NUMBER_RELEASE
 
 ###### CORE ######
-echo -e "$BLEU""\nEnvoie des paquets Core\n""$NORMAL"
+echo -e "$BLEU""\nUpload Core packages\n""$NORMAL"
 
 OPT=$DEBUILD_ARG2
 
@@ -340,7 +341,7 @@ echo "update_pbuilder" >> "$DEBIAN_SCRIPT"
 echo "clean_pbuilder" >> "$DEBIAN_SCRIPT"
 chmod +x "$DEBIAN_SCRIPT"
 for RLS in $UBUNTU_CORE $DEBIAN_CORE; do
-	echo -e "$VERT""Envoie des paquets Core - $RLS""$NORMAL"
+	echo -e "$VERT""Upload Core package - $RLS""$NORMAL"
 	echo -e "\n\t==== Upload : Core - $RLS ====" >> $DIR/log.txt
 	if test -d 'debian'; then
 		rm -r debian
@@ -377,7 +378,7 @@ done
 ###### PAUSE: reset password timeout ######
 
 if [ "$SLEEP_PG" != "" ]; then
-	echo -e "$ROUGE""\nPAUSE DE $(($SLEEP_PG/60)) minutes\n""$NORMAL"
+	echo -e "$ROUGE""\nPAUSE: $(($SLEEP_PG/60)) minutes\n""$NORMAL"
 	cd $DIR
 	for i in 1 2 3 4; do
 		echo $i > sleepPG
@@ -392,11 +393,11 @@ fi
 ###### PLUG-INS ######
 
 cd $DIR/$PLUG_INS-$NUMBER_RELEASE_PG
-echo -e "$BLEU""\nEnvoie des paquets Plug-ins\n""$NORMAL"
+echo -e "$BLEU""\nUpload Plug-ins packages\n""$NORMAL"
 
 OPT=$DEBUILD_ARG2
 for RLS in $UBUNTU_PLUG_INS $DEBIAN_PLUG_INS; do
-	echo -e "$VERT""\nEnvoie des paquets Plug-ins - $RLS""$NORMAL"
+	echo -e "$VERT""\nUpload Plug-ins package - $RLS""$NORMAL"
 	echo -e "\n\t==== Upload : Plug-ins - $RLS ====\n" >> $DIR/log.txt
 	if test -d 'debian'; then
 		rm -r debian
@@ -434,18 +435,18 @@ for RLS in $UBUNTU_PLUG_INS $DEBIAN_PLUG_INS; do
 	OPT='d'
 done
 
-echo -e "\n\t==== FIN ====" >> $DIR/log.txt
+echo -e "\n\t==== END ====" >> $DIR/log.txt
 
 if test -n "$SHUTDOWN" -a ! -e SHUTDOWN; then
 	if test  `ps aux | grep -c " [c]airo-dock"` -gt 0; then
-		dbus-send --session --dest=org.cairodock.CairoDock /org/cairodock/CairoDock org.cairodock.CairoDock.ShowDialog string:"L'ordinateur va s'éteindre dans 1 minute'" int32:8 string:"class=$COLORTERM"
+		dbus-send --session --dest=org.cairodock.CairoDock /org/cairodock/CairoDock org.cairodock.CairoDock.ShowDialog string:"The computer will be powered off in 1 minute." int32:8 string:"class=$COLORTERM"
 	fi
 	sudo shutdown -h 1
 else
 	if test  `ps aux | grep -c " [c]airo-dock"` -gt 0; then
-		dbus-send --session --dest=org.cairodock.CairoDock /org/cairodock/CairoDock org.cairodock.CairoDock.ShowDialog string:"Le script d'envoie des paquets est terminé" int32:8 string:"class=$COLORTERM"
+		dbus-send --session --dest=org.cairodock.CairoDock /org/cairodock/CairoDock org.cairodock.CairoDock.ShowDialog string:"The script to upload all packages is now over." int32:8 string:"class=$COLORTERM"
 	else
-		zenity --info --title=Cairo-Dock --text="Le script d'envoie des paquets est terminé."
+		zenity --info --title=Cairo-Dock --text="The script to upload all packages is now over."
 	fi
 fi
 exit
