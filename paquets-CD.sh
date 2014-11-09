@@ -8,7 +8,7 @@ ROOT_DIR="/opt/cairo-dock_bzr" ## <==
 DEBIAN_DIR="/opt/cairo-dock_bzr/debian" ## <==
 #DEBIAN_DIR="/opt/cairo-dock_bzr/debian_stable" ## <==
 
-UBUNTU_CORE="utopic trusty saucy precise lucid"
+UBUNTU_CORE="utopic trusty precise"
 #UBUNTU_PLUG_INS="precise oneiric maverick lucid"
 UBUNTU_PLUG_INS="$UBUNTU_CORE"
 UNSTABLE_CODENAME="sid"
@@ -19,10 +19,9 @@ DEBIAN_SUITE="unstable testing stable"
 #DEBIAN_PLUG_INS="$DEBIAN_CORE" ## <==
 
 DEBUILD_ARG2='a'
-PPA=0
-PPAPG=$PPA
-REVISION=1 # 3.3.99.beta1.*X*
-# PPAPG="ppa0"
+PPA=0 # For a rebuild: 3.3.99.beta1.1~20140628~bzr3103-0ubuntu1~ppaX
+PPAPG=$PPA # just for plugins
+REVISION=1 # to have a newer version than the one in official repo: 3.3.99.beta1.*X*
 
 # should not be changed
 CL="debian/changelog"
