@@ -6,14 +6,14 @@ Ubuntu_Distrib="lucid oneiric precise quantal raring"
 Architecture="i386 amd64 "
 CD_key="41317877"
 ## LUCID => no LPIA
-debug_mv="cp"	# déplace les fichiers (mv) ou copier (cp)
+debug_mv="cp"	# move files (mv) or just copy them (cp)
 
 
-## Fonctions ##
+## functions ##
 
-dossiers() {
+directories() {
 	if test -d dists; then
-		read -p "Supprimer le dossier 'dists' ? (o/N)" RmDists
+		read -p "Remove 'dists' dir? (o/N)" RmDists
 		if test "$RmDists" = "o" -o  "$RmDists" = "O"; then
 			rm -r dists
 		fi
@@ -37,37 +37,37 @@ dossiers() {
 	done
 }
 
-paquets() {
+packages() {
 	if ! test -d Incoming; then
-		echo "Il faut respecter cette structure :
+		echo "You need to respect this tree:
 		|-Incoming
 		|-----|-cairo-dock
 		|-----|-cairo-dock-plug-ins"
-		read -p "Créer ces dossiers (O) / Continuer (c) / Stop (s) ?" paquets_suite
-		if test "$paquets_suite" = "c" -o  "$paquets_suite" = "C"; then
-			paquets_question
-		elif test "$paquets_suite" = "s" -o  "$paquets_suite" = "S"; then
+		read -p "Create these dirs (O) / Continue (c) / Stop (s) ?" packages_next
+		if test "$packages_next" = "c" -o  "$packages_next" = "C"; then
+			packages_questions
+		elif test "$packages_next" = "s" -o  "$packages_next" = "S"; then
 			echo "Stop"
 			exit 0
 		else
 			mkdir -p Incoming/cairo-dock
 			mkdir Incoming/cairo-dock-plug-ins
-			echo "\tIl faut placer les paquets deb dedans et relancer le script"
+			echo "\tYou need to move deb packages in it and relaunch the script"
 			exit 0
 		fi
 	fi
 
 	if test -d dists; then
-		read -p "Supprimer le dossier 'dists' ? (o/n)" RmDists
+		read -p "Remove 'dists' dir? (o/n)" RmDists
 		if test "$RmDists" = "n" -o  "$RmDists" = "N"; then
 			echo "Stop"
 			exit 0
 		fi
 		rm -r dists
 	fi
-	dossiers
+	directories
 
-	echo "Déplacement des paquets :"
+	echo "Move packages:"
 	for distrib in $Ubuntu_Distrib
 	do
 		MainDir=dists/$distrib
@@ -84,8 +84,8 @@ paquets() {
 	done
 }
 
-depot() {
-	echo "Création des fichiers release et Packages"
+repository() {
+	echo "Creating release and Packages files"
 	for distrib in $Ubuntu_Distrib
 	do
 		echo "\tUbuntu $distrib" 
@@ -184,23 +184,23 @@ depot() {
 	done
 }
 
-paquets_question() {
-	paquets
-	read -p "Créer les fichiers release et Packages ? [O/n]" suite
+packages_questions() {
+	packages
+	read -p "Create release and Packages files? [O/n]" suite
 	if test "$suite" = "n" -o  "$suite" = "N"; then
 		echo "Stop"
 		exit 0
 	fi
-	depot
+	repository
 }
 
 ## Main ##
 
 if [ "$ARG1" = "-p" ]; then
-	paquets
-	depot
+	packages
+	repository
 else
-	echo "Disposition des paquets deb :
+	echo "Structure needed for a repository:
 \t|-dists
 \t|-----|-'distrib' (-> $Ubuntu_Distrib)
 \t|-----|-----|-pool
@@ -210,24 +210,24 @@ else
 \t|-----|-----|-----|-'architecture' (-> $Architecture)
 \t|-----|-----|-----|-----|-cairo-dock
 \t|-----|-----|-----|-----|-cairo-dock-plug-ins
-Possibilité de les arranger automatiquement si on a :
+Possibility to automatically create this tree if we have all deb packages in:
 \t|-Incoming
 \t|-----|-cairo-dock
 \t|-----|-cairo-dock-plug-ins
-Depot pour Ubuntu :
+Repository for Ubuntu:
 \tversions : $Ubuntu_Distrib
 \tarchitectures : $Architecture
 
-Créer release et Packages [O] / Créer les dossiers de dists [d]
- Déplacer les paquets Incoming -> dists [p] / Stop [n]\t\t=> [O/d/p/n]"
+Create release and Packages [O] / Just create directories in dists [d]
+ Move packages from Incoming -> dists [p] / Stop [n]\t\t=> [O/d/p/n]"
 	read pause
 	if test "$pause" = "n" -o  "$pause" = "N"; then
 		exit 0
 	elif test "$pause" = "d" -o  "$pause" = "D"; then
-		dossiers
+		directories
 	elif test "$pause" = "p" -o  "$pause" = "P"; then
-		paquets_question
+		packages_questions
 	else
-		depot
+		repository
 	fi
 fi
