@@ -20,6 +20,8 @@
 
 
 ## Changelog
+# 18/08/14 : 	matttbe : Added libwayland-dev, removed libgnomeui-dev
+# 28/07/14 : 	matttbe : Added gnome-session for GNOME users (needed for the session)
 # 09/12/13 : 	matttbe : Added libxcomposite-dev, libxrandr-dev (instead of libxinerama-dev), gdb (instead of ddd)
 # 16/03/13 : 	matttbe : Added libgnome-menu-3-dev
 # 16/11/12 : 	matttbe : Modified all updated CMake flags
@@ -134,15 +136,16 @@ PLUGINS_XFCE="xfce-integration"
 
 NEEDED_THIRD_PARTY="python valac ruby"
 NEEDED_THIRD_PARTY_A_KARMIC="mono-gmcs libglib2.0-cil-dev libndesk-dbus1.0-cil-dev libndesk-dbus-glib1.0-cil-dev"
-NEEDED="bzr build-essential pkg-config zenity gettext libcairo2-dev librsvg2-dev libdbus-glib-1-dev libgnomeui-dev libxxf86vm-dev x11proto-xf86vidmode-dev libxrandr-dev libxcomposite-dev libxrender-dev libasound2-dev libxtst-dev libetpan-dev libexif-dev curl libglib2.0-dev cmake libcurl4-gnutls-dev libical-dev gdb libsensors4-dev libpulse-dev $NEEDED_THIRD_PARTY "
-NEEDED_XFCE="libthunar-vfs-1-dev"
-NEEDED_GNOME="libgnomevfs2-dev"
+NEEDED="bzr build-essential pkg-config zenity gettext libcairo2-dev librsvg2-dev libdbus-glib-1-dev libxxf86vm-dev x11proto-xf86vidmode-dev libxrandr-dev libxcomposite-dev libxrender-dev libasound2-dev libxtst-dev libetpan-dev libexif-dev curl libglib2.0-dev cmake libcurl4-gnutls-dev libical-dev gdb libsensors4-dev libpulse-dev $NEEDED_THIRD_PARTY "
+NEEDED_XFCE_OLD="libthunar-vfs-1-dev"
+NEEDED_GNOME_OLD="libgnomevfs2-dev"
+NEEDED_GNOME="gnome-session"
 NEEDED_A_KARMIC="libxklavier-dev libdbusmenu-glib-dev libupower-glib-dev $NEEDED_THIRD_PARTY_A_KARMIC"
 NEEDED_KARMIC="libxklavier-dev"
 NEEDED_B_KARMIC="libxklavier12-dev"
 NEEDED_A_LUCID="libzeitgeist-dev"
 NEEDED_B_NATTY="libwebkit-dev"
-NEEDED_A_NATTY="libgtk-3-dev libgl1-mesa-dev libglu1-mesa-dev libpango1.0-dev libdbusmenu-gtk3-dev libido3-0.1-dev libindicator3-dev libwebkitgtk-3.0-dev libvte-2.90-dev libgnome-menu-3-dev" # GTK3
+NEEDED_A_NATTY="libgtk-3-dev libgl1-mesa-dev libglu1-mesa-dev libpango1.0-dev libdbusmenu-gtk3-dev libido3-0.1-dev libindicator3-dev libwebkitgtk-3.0-dev libvte-2.90-dev libgnome-menu-3-dev libwayland-dev" # GTK3
 NEEDED_B_ONEIRIC="libgtk2.0-dev libgtkglext1-dev libdbusmenu-gtk-dev libido-0.1-dev libindicator-dev libwebkitgtk-dev libvte-dev libgnome-menu-dev" # GTK2
 
 UPDATE=0
@@ -1038,6 +1041,7 @@ check_dependancies() {
 	sudo -v # Pour que Nochka puisse aller regarder la tv en attendant la fin de la compilation ;-)
 
 	if [ $(grep -c "^Ubuntu" /etc/issue) -eq 1 ]; then # pour ne pas avoir un message d'erreur sur les autres
+		# VERSIONS
 		if [ $DISTRIB = 'karmic' ]; then #karmic
 			NEEDED="$NEEDED $NEEDED_KARMIC "
 		elif [ `lsb_release -rs | cut -d. -f1` -ge 10 ]; then #lucid ou nouveau
@@ -1050,9 +1054,9 @@ check_dependancies() {
 		else #lucid ou ancien
 			CONFIGURE="$CONFIGURE -Denable-vala-support=OFF"
 			if [ $ENV -eq 1 ]; then #Gnome
-				NEEDED="$NEEDED $NEEDED_GNOME "
+				NEEDED="$NEEDED $NEEDED_GNOME_OLD "
 			elif [ $ENV -eq 3 ]; then #XFCE
-				NEEDED="$NEEDED $NEEDED_XFCE "
+				NEEDED="$NEEDED $NEEDED_XFCE_OLD "
 			fi
 		fi
 		if test `lsb_release -rs | cut -d. -f1` -ge 11; then #natty ou nouveau
@@ -1070,6 +1074,11 @@ check_dependancies() {
 			CD_PACKAGES_OTHER="libgldi-dev libgldi3 cairo-dock-plug-ins-dbus-interface-python cairo-dock-plug-ins-dbus-interface-mono cairo-dock-plug-ins-dbus-interface-ruby cairo-dock-plug-ins-dbus-interface-vala"
 		else
 			CD_PACKAGES_OTHER="cairo-dock-dev"
+		fi
+
+		# ENVIRONMENTS
+		if [ $ENV -eq 1 ]; then #Gnome
+			NEEDED="$NEEDED $NEEDED_GNOME "
 		fi
 	else # on test tout...
 		NEEDED="$NEEDED $NEEDED_THIRD_PARTY $NEEDED_THIRD_PARTY_A_KARMIC $NEEDED_A_KARMIC $NEEDED_KARMIC $NEEDED_A_LUCID $NEEDED_A_MAVERICK $NEEDED_B_NATTY $NEEDED_A_NATTY $NEEDED_B_ONEIRIC"
@@ -1100,7 +1109,9 @@ check_dependancies() {
 		fi
 	done
 
-	sudo apt-get install -y --force-yes -m -qq $paquetsOK
+	if [ "$paquetsOK" != "" ]; then
+		sudo apt-get install -y --force-yes -m -q $paquetsOK
+	fi
 
 	CD_PACKAGES_BASE="cairo-dock cairo-dock-plug-ins cairo-dock-core cairo-dock-plug-ins-data cairo-dock-data cairo-dock-plug-ins-integration"
 	# check CD
@@ -1117,8 +1128,8 @@ check_dependancies() {
 		else
 			echo -e "$ROUGE""Uninstallation of these packages: '$cd_packages'.""$NORMAL"""
 		fi
-		sudo apt-get purge -qq $cd_packages
-		sudo apt-get autoremove --purge -qq
+		sudo apt-get purge -q $cd_packages
+		sudo apt-get autoremove --purge -q
 	fi
 
 	if [ $LG -eq 0 ]; then
