@@ -1,9 +1,9 @@
 #!/bin/sh
 
 ARG1=$1
-Ubuntu_Distrib="lucid oneiric precise quantal raring"
+Ubuntu_Distrib="precise trusty utopic vivid" # + add new distrib here above
 # added the new distrib => l108
-Architecture="i386 amd64 "
+Architecture="i386 amd64"
 CD_key="41317877"
 ## LUCID => no LPIA
 debug_mv="cp"	# move files (mv) or just copy them (cp)
@@ -94,49 +94,21 @@ repository() {
 		Version_distrib="unstable"
 		Description_distrib="Ubuntu Unstable"
 		case $distrib in
-			raring)
-				Version_distrib="13.04"
-				Description_distrib="Ubuntu Raring 13.04"
+			vivid)
+				Version_distrib="15.04"
+				Description_distrib="Ubuntu Vivid 15.04"
 				;;
-			quantal)
-				Version_distrib="12.10"
-				Description_distrib="Ubuntu Quantal 12.10"
+			utopic)
+				Version_distrib="14.10"
+				Description_distrib="Ubuntu Utopic 14.10"
+				;;
+			trusty)
+				Version_distrib="14.04"
+				Description_distrib="Ubuntu Trusty 14.04"
 				;;
 			precise)
 				Version_distrib="12.04"
 				Description_distrib="Ubuntu Precise 12.04"
-				;;
-			oneiric)
-				Version_distrib="11.10"
-				Description_distrib="Ubuntu Oneiric 11.10"
-				;;
-			natty)
-				Version_distrib="11.04"
-				Description_distrib="Ubuntu Natty 11.04"
-				;;
-			maverick)
-				Version_distrib="10.10"
-				Description_distrib="Ubuntu Maverick 10.10"
-				;;
-			lucid)
-				Version_distrib="10.04"
-				Description_distrib="Ubuntu Lucid 10.04"
-				;;
-			karmic)
-				Version_distrib="9.10"
-				Description_distrib="Ubuntu Karmic 9.10"
-				;;
-			jaunty)
-				Version_distrib="9.04"
-				Description_distrib="Ubuntu Jaunty 9.04"
-				;;
-			intrepid)
-				Version_distrib="8.10"
-				Description_distrib="Ubuntu Intrepid 8.10"
-				;;
-			hardy)
-				Version_distrib="8.04"
-				Description_distrib="Ubuntu Hardy 8.04"
 				;;
 		esac
 		mkdir $MainDir/cairo-dock/
