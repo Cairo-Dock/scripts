@@ -1,14 +1,14 @@
 #!/bin/bash
-DIR=$(pwd) # -> /opt/cairo-dock_bzr/Paquets/*.*.*
-DIR_VERIF=`echo $DIR | grep -c /Paquets/`
+DIR=$(pwd) # -> /opt/cairo-dock/Packages/*.*.*
+DIR_VERIF=`echo $DIR | grep -c /Packages/`
 
 #Can be changed
-ROOT_DIR="/opt/cairo-dock_bzr" ## <==
-#ROOT_DIR="/opt/cairo-dock_bzr/3.1" ## <==
-DEBIAN_DIR="/opt/cairo-dock_bzr/debian" ## <==
-#DEBIAN_DIR="/opt/cairo-dock_bzr/debian_stable" ## <==
+ROOT_DIR="/opt/cairo-dock" ## <==
+#ROOT_DIR="/opt/cairo-dock/3.1" ## <==
+DEBIAN_DIR="/opt/cairo-dock/debian" ## <==
+#DEBIAN_DIR="/opt/cairo-dock/debian_stable" ## <==
 
-UBUNTU_CORE="utopic trusty precise"
+UBUNTU_CORE="vivid utopic trusty precise"
 #UBUNTU_PLUG_INS="precise oneiric maverick lucid"
 UBUNTU_PLUG_INS="$UBUNTU_CORE"
 UNSTABLE_CODENAME="sid"
@@ -19,7 +19,7 @@ DEBIAN_SUITE="unstable testing stable"
 #DEBIAN_PLUG_INS="$DEBIAN_CORE" ## <==
 
 DEBUILD_ARG2='a'
-PPA=0 # For a rebuild: 3.3.99.beta1.1~20140628~bzr3103-0ubuntu1~ppaX
+PPA=0 # For a rebuild: 3.3.99.beta1.1~20140628~git3103~9378aa9-0ubuntu1~ppaX
 PPAPG=$PPA # just for plugins
 REVISION=1 # to have a newer version than the one in official repo: 3.3.99.beta1.*X*
 
@@ -33,41 +33,29 @@ mkdir -p "$DEBIAN_PBUILDER"
 DEBIAN_SCRIPT="$DEBIAN_PBUILDER/debian_script.sh"
 
 ### CHANGELOG ###
-CHANGELOG='\\n  * New Upstream Version (sync from BZR).' ## <==
-CHANGELOG_PLUG_INS='\\n  * New Upstream Version (sync from BZR).' ## <==
+CHANGELOG='\\n  * New Upstream Version (sync from GIT).' ## <==
+CHANGELOG_PLUG_INS='\\n  * New Upstream Version (sync from GIT).' ## <==
 #CHANGELOG='\\n  * New Upstream Version (3.1.0).\n   - Better integration of Unity: support of the Launcher API\n      and better support of indicators\n   - All configuration windows have been merged into a single one.\n   - Added progress bars in several applets and in the Dbus API\n   - The Music Player applet can control players in the systray.\n   - Icons of the taskbar can be separated from launchers or not\n   - And as always ... various bug fixes and improvements :-)'
 #CHANGELOG_PLUG_INS='\\n  * New Upstream Version (3.1.0).' ## <==
 
+############################
+## How to use this script ##
+############################
 
-#CHANGELOG='\\n  * New Upstream Version (3.0.0).\n   - The taskbar has been greatly enhanced.\n   - The Log out applet has been rewritten, now allows to switch users.\n   - The control of the dock from the keyboard is now very powerful:\n     - many shortkeys have been added in different applets\n     - you can activate a launcher by pressing a shortkey + its number\n     - all shortkeys can now be managed in a single place in the configuration window.\n   - The Sound Menu from Ubuntu has been integrated into the Sound-Control applet.\n   - A new Twitter applet lets you tweet in one click.\n   - A new applet to inhibit the screensaver in one click.\n   - Separators are transparent to click in Panel mode\n   - Cairo-Dock now uses GTK3, for a better integration in a Gnome desktop\n   - Few additions to the DBus API.\n   - It s possible to donate to support the project!'  ## <==
-#CHANGELOG_PLUG_INS='\\n  * New Upstream Version (3.0.0).' ## <==
-
-
-#CHANGELOG_PLUG_INS='\\n  * New Upstream Version (2.4.0~3).\n  * From 2.4.0~2 to 2.4.0~2.1:\n   - Desklet-rendering - viewport: fixed a crash when the desklet is empty.\n   - Status-Notifier: patch to work around the bugs in the Ubuntu indicator-application.\n   - Switcher: fixed a crash in expanded+desklet mode, and a wrong loading of the icons.\n   - Switcher: fixed a small drawing bug with the last patch.\n   - GMenu: look for *-applications.menu file in the xdg path, if common file names are not found.'
-#CHANGELOG='\\n  * New Upstream Version (2.3.0~3).\n  * From 2.3.0~1 to 2.3.0~2:\n   - Fixed a crash that occured when a class sub-dock was destroyed\n   - Fixed a major bug where the dock couldn t re-appear after a menu has been triggerd from outside the dock (ie, from a shortcut)\n  * From 2.3.0~2 to 2.3.0~3:\n   - Fixed a crash that occurs when the MP applet is in desklet mode and applets separated from launchers and the music-player is launched.\n   - Fixed an annoying bug when we leave the dock with cursor slowly on the right or on the left of it.'
-#CHANGELOG_PLUG_INS='\\n  * New Upstream Version (2.3.0~3).\n  * From 2.3.0~1 to 2.3.0~2:\n   - Fixed a typo in CMakeLists.txt about Ruby interface.\n   - CMakeLists.txt: Added the status of applets (stable/unstable/unsupported) to help packagers to not include unstable or unsupported applets on Cairo-Dock packages for stable distributions.\n  * From 2.3.0~2 to 2.3.0~3:\n   - Status Notifier: enable translations (fixed a typo)\n   - Weather: prevent a crash if there is an error (Thanks to Tsu Jan & Fabounet)\n   - dnd2share: avoid a crash of u1sdtool'
-
-#	## Pour dput.cf :
-#	  * remplacer 'matttbe' ci-dessous et ci-dessus par votre pseudo
-#	  * Avoir plusieurs entrées pour les versions supportées (voir ci-dessus sauf pour debian)
-#		[matttbe-exp-jaunty] 
-#		fqdn = ppa.launchpad.net 
-#		method = ftp 
+#	## You need a dput.cf :
+#	  * remplace 'matttbe' here above and bellow by your nickname
+#	  * You need one section for each supported version (only for Ubuntu), e.g. here with jaunty:
+#		[matttbe-exp-jaunty]
+#		fqdn = ppa.launchpad.net
+#		method = ftp
 #		incoming = ~matttbe/experimental/ubuntu/jaunty
-#		login = anonymous 
-#		allow_unsigned_uploads = 0 
-#
-#		[matttbe-jaunty] 
-#		fqdn = ppa.launchpad.net 
-#		method = ftp 
-#		incoming = ~matttbe/ppa/ubuntu/jaunty 
-#		login = anonymous 
+#		login = anonymous
 #		allow_unsigned_uploads = 0
 
 #	## Explications
-#	  * Attention de bien respecter la disposition des dossiers (ou modifier le script)
-#	  * Les paquets sont envoyés sur son propre ppa pour être ensuite copier vers les ppa de CD (obligé à cause des 2 tarball à envoyer par version...
-#	  * Le script doit être exécuté depuis le dossier Paquets/x.x.x/ => .././paquets-CD.sh
+#	  * You need to respect the structures of files: in $DEBIAN_DIR: we should find a directory for each version which contains 'debian' (dir for the core) and 'plug-ins/debian' (dir for the plugins)
+#	  * All packages should be firstly sent to a temporary PPA and then copy to another one (to wait for the compilation of the core and plugins)
+#	  * This script has to be launched from this dir: Packages/x.x.x/ => $ .././debPackages.sh
 
 
 NORMAL="\\033[0;39m"
@@ -75,7 +63,7 @@ BLEU="\\033[1;34m"
 VERT="\\033[1;32m"
 ROUGE="\\033[1;31m"
 
-echo -e "\n""$BLEU""Upload sur les ppa""$ROUGE"
+echo -e "\n""$BLEU""Upload to ppa""$ROUGE"
 
 while getopts ":e:d:sxtugfh" flag
 do
@@ -150,7 +138,7 @@ if test "$1" = ""; then
 \t|-/cairo-dock-core (+ sources)
 \t|-/cairo-dock-plug-ins (+ sources)
 \t|-/debian (+ sources)
-\t|-/Paquets
+\t|-/Packages
 \t|-----|-/x.x.x -> (e.g. : 2.1.0)
 \t|-----|-----|- => this script has to be launched from this dir"
 	echo -e "$BLEU""PPA :""$NORMAL""
@@ -159,13 +147,13 @@ if test "$1" = ""; then
 \t* Having ~/.dput.cf file with entries $DPUT_PSEUDO-[$UBUNTU_CORE]"
 
 	echo -e "$BLEU""\nExtras :""$NORMAL""
-\tIf the script is launched with '../.paquets-CD.sh -...' :
+\tIf the script is launched with '../.debPackages.sh -...' :
 \t\t-f : no cmake
 \t\t-u : upload -> tarballs already exists"
 fi
 
 if [ $DIR_VERIF -eq 0 ]; then
-	echo -e "$ROUGE""WARNING : wrong DIR! ""$NORMAL"
+	echo -e "$ROUGE""WARNING : wrong DIR! You're not in this dir: Packages/x.x.x/""$NORMAL"
 	exit 0
 fi
 
@@ -175,7 +163,7 @@ PLUG_INS=`head -n 15 "$ROOT_DIR"/cairo-dock-plug-ins/CMakeLists.txt | grep "proj
 
 echo -e "$VERT"
 
-read -p "Special version? (press enter for: $NUMBER_RELEASE.$REVISION~$date_AJD~bzrXXX-0ubuntu1~ppa$PPA ; 'CD' = Version for official repositories): " VERSION
+read -p "Special version? (press enter for: $NUMBER_RELEASE.$REVISION~$date_AJD~gitXXX~HASH-0ubuntu1~ppa$PPA ; 'CD' = Version for official repositories): " VERSION
 if [ "$VERSION" = "CD" ]; then
 	echo -e "$ROUGE""\n\n\t\WARNING: REMOVED FLAGS FOR INSTABLE APPLETS !!!"
 	echo -e "\tDir with core and plug-ins branches: $ROOT_DIR"
@@ -186,7 +174,7 @@ fi
 	dpkg -s trickle |grep installed |grep "install ok" > /dev/null	
 	if [ $? -eq 1 ]; then
 		echo -e "$ROUGE""Package 'trickle' is not available: Installation""$NORMAL"
-		sudo apt-get install -qq trickle 
+		sudo apt-get install -qq trickle
 	fi
 read -p "Limit upload bandwidth? (ko) : " TRICKLE
 if [ "$TRICKLE" = "" ]; then
@@ -238,16 +226,16 @@ else
 	TARBALL_CORE="cairo-dock-$NUMBER_RELEASE.tar.gz"
 	TARBALL_ORIG_CORE="cairo-dock_$NUMBER_RELEASE.orig.tar.gz"
 	mv $TARBALL_CORE $DIR/$TARBALL_ORIG_CORE
-	if [ "$VERSION" != "CD" ]; then 
-		CORE_REV=`bzr revno`
+	if [ "$VERSION" != "CD" ]; then
+		CORE_REV="`git rev-list HEAD --count`~`git rev-parse --short HEAD`"
 	fi
 	cd $DIR
 	tar xzf $TARBALL_ORIG_CORE
 	rm -rf "$DEBIAN_PBUILDER"
 	mkdir -p "$DEBIAN_PBUILDER"
 	if [ "$VERSION" = "" ]; then
-		mv $TARBALL_ORIG_CORE "cairo-dock_$NUMBER_RELEASE.$REVISION~$date_AJD~bzr$CORE_REV.orig.tar.gz"
-		cp "cairo-dock_$NUMBER_RELEASE.$REVISION~$date_AJD~bzr$CORE_REV.orig.tar.gz" "$DEBIAN_PBUILDER"
+		mv $TARBALL_ORIG_CORE "cairo-dock_$NUMBER_RELEASE.$REVISION~$date_AJD~git$CORE_REV.orig.tar.gz"
+		cp "cairo-dock_$NUMBER_RELEASE.$REVISION~$date_AJD~git$CORE_REV.orig.tar.gz" "$DEBIAN_PBUILDER"
 	else
 		cp $TARBALL_ORIG_CORE "$DEBIAN_PBUILDER"
 	fi
@@ -265,8 +253,8 @@ else
 		rm -rf build/
 		mkdir build
 		cd build/
-		if test "$ARG1" = "-x" -a -f "$ROOT_DIR""/cairo-dock_bzr.sh"; then
-			CONFIGURE=`grep "CONFIGURE=" "$ROOT_DIR"/cairo-dock_bzr.sh |head -n1 |cut -d\" -f2 |cut -d\" -f1`
+		if test "$ARG1" = "-x" -a -f "$ROOT_DIR""/cairo-dock_git.sh"; then
+			CONFIGURE=`grep "CONFIGURE_PG=" "$ROOT_DIR"/cairo-dock_git.sh |head -n1 |cut -d\" -f2 |cut -d\" -f1`
 		fi
 		cmake .. -DCMAKE_INSTALL_PREFIX=/usr $CONFIGURE -DPACKAGEMENT=yes >> $DIR/log.txt
 	fi
@@ -276,14 +264,14 @@ else
 	TARBALL_PG="$PLUG_INS-$NUMBER_RELEASE_PG.tar.gz"
 	TARBALL_ORIG_PG="cairo-dock-plug-ins_$NUMBER_RELEASE_PG.orig.tar.gz"
 	mv $TARBALL_PG $DIR/$TARBALL_ORIG_PG
-	if [ "$VERSION" != "CD" ]; then 
-		PLUG_INS_REV=`bzr revno`
+	if [ "$VERSION" != "CD" ]; then
+		PLUG_INS_REV="`git rev-list HEAD --count`~`git rev-parse --short HEAD`"
 	fi
 	cd $DIR
 	tar xzf $TARBALL_ORIG_PG
 	if [ "$VERSION" = "" ]; then
-		mv $TARBALL_ORIG_PG "cairo-dock-plug-ins_$NUMBER_RELEASE_PG.$REVISION~$date_AJD~bzr$PLUG_INS_REV.orig.tar.gz"
-		cp "cairo-dock-plug-ins_$NUMBER_RELEASE_PG.$REVISION~$date_AJD~bzr$PLUG_INS_REV.orig.tar.gz" "$DEBIAN_PBUILDER"
+		mv $TARBALL_ORIG_PG "cairo-dock-plug-ins_$NUMBER_RELEASE_PG.$REVISION~$date_AJD~git$PLUG_INS_REV.orig.tar.gz"
+		cp "cairo-dock-plug-ins_$NUMBER_RELEASE_PG.$REVISION~$date_AJD~git$PLUG_INS_REV.orig.tar.gz" "$DEBIAN_PBUILDER"
 	else
 		cp $TARBALL_ORIG_PG "$DEBIAN_PBUILDER"
 	fi
@@ -301,19 +289,19 @@ if [ "$SHUTDOWN" != "" ]; then sudo -v; fi
 
 if test "$CORE_REV" = "" -a  "$VERSION" != "CD"; then
 	cd "$ROOT_DIR"/cairo-dock-core/
-	CORE_REV=`bzr revno`
+	CORE_REV="`git rev-list HEAD --count`~`git rev-parse --short HEAD`"
 	cd "$ROOT_DIR"/cairo-dock-plug-ins/
-	PLUG_INS_REV=`bzr revno`
+	PLUG_INS_REV="`git rev-list HEAD --count`~`git rev-parse --short HEAD`"
 	cd $DIR
 fi
 
 ### PACKAGE NAME
 
 if [ "$VERSION" = "" ]; then
-	VERSION="$NUMBER_RELEASE.$REVISION~$date_AJD~bzr$CORE_REV-0ubuntu1~ppa$PPA"
-	VERSION_PG="$NUMBER_RELEASE_PG.$REVISION~$date_AJD~bzr$PLUG_INS_REV-0ubuntu1~ppa$PPAPG"
-	VERSION_DEB="$NUMBER_RELEASE.$REVISION~$date_AJD~bzr$CORE_REV-1debian1~ppa$PPA"
-	VERSION_DEB_PG="$NUMBER_RELEASE_PG.$REVISION~$date_AJD~bzr$PLUG_INS_REV-1debian1~ppa$PPAPG"
+	VERSION="$NUMBER_RELEASE.$REVISION~$date_AJD~git$CORE_REV-0ubuntu1~ppa$PPA"
+	VERSION_PG="$NUMBER_RELEASE_PG.$REVISION~$date_AJD~git$PLUG_INS_REV-0ubuntu1~ppa$PPAPG"
+	VERSION_DEB="$NUMBER_RELEASE.$REVISION~$date_AJD~git$CORE_REV-1debian1~ppa$PPA"
+	VERSION_DEB_PG="$NUMBER_RELEASE_PG.$REVISION~$date_AJD~git$PLUG_INS_REV-1debian1~ppa$PPAPG"
 elif [ "$VERSION" = "CD" ]; then
 	VERSION="$NUMBER_RELEASE-0ubuntu$PPA"
 	VERSION_PG="$NUMBER_RELEASE_PG-0ubuntu$PPAPG"
