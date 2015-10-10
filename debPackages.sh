@@ -8,7 +8,7 @@ ROOT_DIR="/opt/cairo-dock" ## <==
 DEBIAN_DIR="/opt/cairo-dock/debian" ## <==
 #DEBIAN_DIR="/opt/cairo-dock/debian_stable" ## <==
 
-UBUNTU_CORE="vivid utopic trusty precise"
+UBUNTU_CORE="wily vivid trusty precise" ## <==
 #UBUNTU_PLUG_INS="precise oneiric maverick lucid"
 UBUNTU_PLUG_INS="$UBUNTU_CORE"
 UNSTABLE_CODENAME="sid"
