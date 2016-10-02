@@ -268,6 +268,8 @@ install(){
 		echo -e "$LG_SSH"
 		read DL_SSH
 		[ "$DL_SSH" = "y" -o "$DL_SSH" = "Y" ] && GIT_REPO=$GIT_REPO_SSH || GIT_REPO=$GIT_REPO_HTTPS
+	else
+		GIT_REPO=$GIT_REPO_HTTPS
 	fi
 
 	read -p "$LG_FORK" DL_FORK
